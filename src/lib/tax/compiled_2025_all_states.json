@@ -1,0 +1,1690 @@
+{
+  "AK": {
+    "state": "AK",
+    "year": 2025,
+    "hasIncomeTax": false,
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.673Z",
+    "errors": []
+  },
+  "AL": {
+    "state": "AL",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 3000,
+          "rate": 0.02
+        },
+        {
+          "upTo": null,
+          "rate": 0.05
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 3000
+    },
+    "personalExemption": {
+      "single": 1500
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.672Z",
+    "errors": []
+  },
+  "AR": {
+    "state": "AR",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.02
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 2410
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.674Z",
+    "errors": []
+  },
+  "AZ": {
+    "state": "AZ",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.025
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 15000
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.673Z",
+    "errors": []
+  },
+  "CA": {
+    "state": "CA",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 25499,
+          "rate": 0.01
+        },
+        {
+          "upTo": 40245,
+          "rate": 0.04
+        },
+        {
+          "upTo": 55866,
+          "rate": 0.06
+        },
+        {
+          "upTo": 70606,
+          "rate": 0.08
+        },
+        {
+          "upTo": 360659,
+          "rate": 0.093
+        },
+        {
+          "upTo": 432787,
+          "rate": 0.103
+        },
+        {
+          "upTo": 721314,
+          "rate": 0.113
+        },
+        {
+          "upTo": 1000000,
+          "rate": 0.123
+        },
+        {
+          "upTo": null,
+          "rate": 0.133
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 5540
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.674Z",
+    "errors": []
+  },
+  "CO": {
+    "state": "CO",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.044
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 15000
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.675Z",
+    "errors": []
+  },
+  "CT": {
+    "state": "CT",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 50000,
+          "rate": 0.02
+        },
+        {
+          "upTo": 100000,
+          "rate": 0.055
+        },
+        {
+          "upTo": 200000,
+          "rate": 0.06
+        },
+        {
+          "upTo": 250000,
+          "rate": 0.065
+        },
+        {
+          "upTo": 500000,
+          "rate": 0.069
+        },
+        {
+          "upTo": null,
+          "rate": 0.0699
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 15000
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.675Z",
+    "errors": []
+  },
+  "DC": {
+    "state": "DC",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 40000,
+          "rate": 0.04
+        },
+        {
+          "upTo": 60000,
+          "rate": 0.065
+        },
+        {
+          "upTo": 250000,
+          "rate": 0.085
+        },
+        {
+          "upTo": 500000,
+          "rate": 0.0925
+        },
+        {
+          "upTo": 1000000,
+          "rate": 0.0975
+        },
+        {
+          "upTo": null,
+          "rate": 0.1075
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 15000
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.694Z",
+    "errors": []
+  },
+  "DE": {
+    "state": "DE",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 10000,
+          "rate": 0.022
+        },
+        {
+          "upTo": 20000,
+          "rate": 0.048
+        },
+        {
+          "upTo": 25000,
+          "rate": 0.052
+        },
+        {
+          "upTo": 60000,
+          "rate": 0.0555
+        },
+        {
+          "upTo": null,
+          "rate": 0.066
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 3250
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.676Z",
+    "errors": []
+  },
+  "FL": {
+    "state": "FL",
+    "year": 2025,
+    "hasIncomeTax": false,
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.676Z",
+    "errors": []
+  },
+  "GA": {
+    "state": "GA",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.0539
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 12000
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.676Z",
+    "errors": []
+  },
+  "HI": {
+    "state": "HI",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 14400,
+          "rate": 0.014
+        },
+        {
+          "upTo": 19200,
+          "rate": 0.055
+        },
+        {
+          "upTo": 24000,
+          "rate": 0.064
+        },
+        {
+          "upTo": 36000,
+          "rate": 0.068
+        },
+        {
+          "upTo": 48000,
+          "rate": 0.072
+        },
+        {
+          "upTo": 125000,
+          "rate": 0.076
+        },
+        {
+          "upTo": 175000,
+          "rate": 0.079
+        },
+        {
+          "upTo": 225000,
+          "rate": 0.0825
+        },
+        {
+          "upTo": 275000,
+          "rate": 0.09
+        },
+        {
+          "upTo": 325000,
+          "rate": 0.1
+        },
+        {
+          "upTo": null,
+          "rate": 0.11
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 4400
+    },
+    "personalExemption": {
+      "single": 1144
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.677Z",
+    "errors": []
+  },
+  "IA": {
+    "state": "IA",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.038
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.679Z",
+    "errors": []
+  },
+  "ID": {
+    "state": "ID",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.05695
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 15000
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.678Z",
+    "errors": []
+  },
+  "IL": {
+    "state": "IL",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.0495
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 2850
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.678Z",
+    "errors": []
+  },
+  "IN": {
+    "state": "IN",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.03
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 1000
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.678Z",
+    "errors": []
+  },
+  "KS": {
+    "state": "KS",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.052
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 3605
+    },
+    "personalExemption": {
+      "single": 9160
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.680Z",
+    "errors": []
+  },
+  "KY": {
+    "state": "KY",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.04
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 3270
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.680Z",
+    "errors": []
+  },
+  "LA": {
+    "state": "LA",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.03
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 12500
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.681Z",
+    "errors": []
+  },
+  "MA": {
+    "state": "MA",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 1083150,
+          "rate": 0.05
+        },
+        {
+          "upTo": null,
+          "rate": 0.09
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 4400
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.682Z",
+    "errors": []
+  },
+  "MD": {
+    "state": "MD",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 2000,
+          "rate": 0.02
+        },
+        {
+          "upTo": 3000,
+          "rate": 0.04
+        },
+        {
+          "upTo": 100000,
+          "rate": 0.0475
+        },
+        {
+          "upTo": 125000,
+          "rate": 0.05
+        },
+        {
+          "upTo": 150000,
+          "rate": 0.0525
+        },
+        {
+          "upTo": 250000,
+          "rate": 0.055
+        },
+        {
+          "upTo": null,
+          "rate": 0.0575
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 2700
+    },
+    "personalExemption": {
+      "single": 3200
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.681Z",
+    "errors": []
+  },
+  "ME": {
+    "state": "ME",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 63450,
+          "rate": 0.058
+        },
+        {
+          "upTo": null,
+          "rate": 0.0715
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 15000
+    },
+    "personalExemption": {
+      "single": 5150
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.681Z",
+    "errors": []
+  },
+  "MI": {
+    "state": "MI",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.0425
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 5800
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.682Z",
+    "errors": []
+  },
+  "MN": {
+    "state": "MN",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 106990,
+          "rate": 0.0535
+        },
+        {
+          "upTo": 198630,
+          "rate": 0.0785
+        },
+        {
+          "upTo": null,
+          "rate": 0.0985
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 14950
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.683Z",
+    "errors": []
+  },
+  "MO": {
+    "state": "MO",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 3939,
+          "rate": 0.02
+        },
+        {
+          "upTo": 5252,
+          "rate": 0.03
+        },
+        {
+          "upTo": 6565,
+          "rate": 0.035
+        },
+        {
+          "upTo": 7878,
+          "rate": 0.04
+        },
+        {
+          "upTo": 9191,
+          "rate": 0.045
+        },
+        {
+          "upTo": null,
+          "rate": 0.047
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 15000
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.683Z",
+    "errors": []
+  },
+  "MS": {
+    "state": "MS",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.044
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 2300
+    },
+    "personalExemption": {
+      "single": 6000
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.683Z",
+    "errors": []
+  },
+  "MT": {
+    "state": "MT",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.047
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 15000
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.684Z",
+    "errors": []
+  },
+  "NC": {
+    "state": "NC",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.0425
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 12750
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.687Z",
+    "errors": []
+  },
+  "ND": {
+    "state": "ND",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.0195
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 15000
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.687Z",
+    "errors": []
+  },
+  "NE": {
+    "state": "NE",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 24120,
+          "rate": 0.0246
+        },
+        {
+          "upTo": 38870,
+          "rate": 0.0501
+        },
+        {
+          "upTo": null,
+          "rate": 0.052
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 8600
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.684Z",
+    "errors": []
+  },
+  "NH": {
+    "state": "NH",
+    "year": 2025,
+    "hasIncomeTax": false,
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.685Z",
+    "errors": []
+  },
+  "NJ": {
+    "state": "NJ",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 35000,
+          "rate": 0.014
+        },
+        {
+          "upTo": 40000,
+          "rate": 0.035
+        },
+        {
+          "upTo": 75000,
+          "rate": 0.05525
+        },
+        {
+          "upTo": 500000,
+          "rate": 0.0637
+        },
+        {
+          "upTo": 1000000,
+          "rate": 0.0897
+        },
+        {
+          "upTo": null,
+          "rate": 0.1075
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 1000
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.685Z",
+    "errors": []
+  },
+  "NM": {
+    "state": "NM",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 16500,
+          "rate": 0.015
+        },
+        {
+          "upTo": 33500,
+          "rate": 0.043
+        },
+        {
+          "upTo": 66500,
+          "rate": 0.047
+        },
+        {
+          "upTo": 210000,
+          "rate": 0.049
+        },
+        {
+          "upTo": null,
+          "rate": 0.059
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 15000
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.686Z",
+    "errors": []
+  },
+  "NV": {
+    "state": "NV",
+    "year": 2025,
+    "hasIncomeTax": false,
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.685Z",
+    "errors": []
+  },
+  "NY": {
+    "state": "NY",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 11700,
+          "rate": 0.04
+        },
+        {
+          "upTo": 13900,
+          "rate": 0.0525
+        },
+        {
+          "upTo": 80650,
+          "rate": 0.055
+        },
+        {
+          "upTo": 215400,
+          "rate": 0.06
+        },
+        {
+          "upTo": 1077550,
+          "rate": 0.0685
+        },
+        {
+          "upTo": 5000000,
+          "rate": 0.0965
+        },
+        {
+          "upTo": 25000000,
+          "rate": 0.103
+        },
+        {
+          "upTo": null,
+          "rate": 0.109
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 8000
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.686Z",
+    "errors": []
+  },
+  "OH": {
+    "state": "OH",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.0275
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 2400
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.687Z",
+    "errors": []
+  },
+  "OK": {
+    "state": "OK",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 2500,
+          "rate": 0.0025
+        },
+        {
+          "upTo": 3750,
+          "rate": 0.0175
+        },
+        {
+          "upTo": 4900,
+          "rate": 0.0275
+        },
+        {
+          "upTo": 7200,
+          "rate": 0.0375
+        },
+        {
+          "upTo": null,
+          "rate": 0.0475
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 6350
+    },
+    "personalExemption": {
+      "single": 1000
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.688Z",
+    "errors": []
+  },
+  "OR": {
+    "state": "OR",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 11050,
+          "rate": 0.0475
+        },
+        {
+          "upTo": 125000,
+          "rate": 0.0875
+        },
+        {
+          "upTo": null,
+          "rate": 0.099
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 2800
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.688Z",
+    "errors": []
+  },
+  "PA": {
+    "state": "PA",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.0307
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.689Z",
+    "errors": []
+  },
+  "RI": {
+    "state": "RI",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 181650,
+          "rate": 0.0375
+        },
+        {
+          "upTo": null,
+          "rate": 0.0599
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 10900
+    },
+    "personalExemption": {
+      "single": 5100
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.689Z",
+    "errors": []
+  },
+  "SC": {
+    "state": "SC",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 17830,
+          "rate": 0
+        },
+        {
+          "upTo": null,
+          "rate": 0.062
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 15000
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.690Z",
+    "errors": []
+  },
+  "SD": {
+    "state": "SD",
+    "year": 2025,
+    "hasIncomeTax": false,
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.690Z",
+    "errors": []
+  },
+  "TN": {
+    "state": "TN",
+    "year": 2025,
+    "hasIncomeTax": false,
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.690Z",
+    "errors": []
+  },
+  "TX": {
+    "state": "TX",
+    "year": 2025,
+    "hasIncomeTax": false,
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.691Z",
+    "errors": []
+  },
+  "UT": {
+    "state": "UT",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "flat",
+    "flatRate": {
+      "filingStatus": "single",
+      "rate": 0.0455
+    },
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.691Z",
+    "errors": []
+  },
+  "VA": {
+    "state": "VA",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 5000,
+          "rate": 0.02
+        },
+        {
+          "upTo": 17000,
+          "rate": 0.05
+        },
+        {
+          "upTo": null,
+          "rate": 0.0575
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 8500
+    },
+    "personalExemption": {
+      "single": 930
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.692Z",
+    "errors": []
+  },
+  "VT": {
+    "state": "VT",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 116000,
+          "rate": 0.0335
+        },
+        {
+          "upTo": 242000,
+          "rate": 0.076
+        },
+        {
+          "upTo": null,
+          "rate": 0.0875
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 7400
+    },
+    "personalExemption": {
+      "single": 5100
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.691Z",
+    "errors": []
+  },
+  "WA": {
+    "state": "WA",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 270000
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.692Z",
+    "errors": []
+  },
+  "WI": {
+    "state": "WI",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 29370,
+          "rate": 0.035
+        },
+        {
+          "upTo": 323290,
+          "rate": 0.053
+        },
+        {
+          "upTo": null,
+          "rate": 0.0765
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 13560
+    },
+    "personalExemption": {
+      "single": 700
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.693Z",
+    "errors": []
+  },
+  "WV": {
+    "state": "WV",
+    "year": 2025,
+    "hasIncomeTax": true,
+    "taxType": "progressive",
+    "brackets": {
+      "single": [
+        {
+          "upTo": 25000,
+          "rate": 0.0222
+        },
+        {
+          "upTo": 40000,
+          "rate": 0.0333
+        },
+        {
+          "upTo": 60000,
+          "rate": 0.0444
+        },
+        {
+          "upTo": null,
+          "rate": 0.0482
+        }
+      ]
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 2000
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.692Z",
+    "errors": []
+  },
+  "WY": {
+    "state": "WY",
+    "year": 2025,
+    "hasIncomeTax": false,
+    "brackets": {
+      "single": []
+    },
+    "standardDeduction": {
+      "single": 0
+    },
+    "personalExemption": {
+      "single": 0
+    },
+    "notes": "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+    "verified": true,
+    "confidence": "verified",
+    "source": [
+      "https://taxfoundation.org/data/all/state/state-income-tax-rates/"
+    ],
+    "lastReviewed": "2025-12-22T21:03:34.693Z",
+    "errors": []
+  }
+}
