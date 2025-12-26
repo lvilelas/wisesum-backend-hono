@@ -18,6 +18,6 @@ export type Env = {
   STRIPE_PRICE_ONE_TIME?: string;
 
   /* Cloudflare (PDF) */
-  CF_ACCOUNT_ID?: string;
+  CLOUDFLARE_ACCOUNT_ID?: string;
   CF_BROWSER_RENDERING_API_TOKEN?: string;
 };

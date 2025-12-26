@@ -1,6 +1,5 @@
 # Dependencies
 node_modules/
-package-lock.json
 yarn.lock
 
 # Environment variables
@@ -23,8 +22,10 @@ Thumbs.db
 dist/
 build/
 *.log
-
+.wrangler/
 # Runtime data
 *.pid
 *.seed
 .tmp/
+
+clerk_jwt_key.pem
