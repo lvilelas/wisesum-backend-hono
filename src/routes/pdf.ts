@@ -9,7 +9,7 @@ pdfRoute.get("/pdf", async (c) => {
     const simulationId = c.req.query("simulationId");
     if (!simulationId) return c.json({ message: "Missing simulationId" }, 400);
 
-    if (!c.env.CF_ACCOUNT_ID) return c.json({ message: "Missing CF_ACCOUNT_ID" }, 500);
+    if (!c.env.CLOUDFLARE_ACCOUNT_ID) return c.json({ message: "Missing CLOUDFLARE_ACCOUNT_ID" }, 500);
     if (!c.env.CF_BROWSER_RENDERING_API_TOKEN)
       return c.json({ message: "Missing CF_BROWSER_RENDERING_API_TOKEN" }, 500);
     if (!c.env.PDF_TOKEN_SECRET) return c.json({ message: "Missing PDF_TOKEN_SECRET" }, 500);
@@ -36,7 +36,7 @@ pdfRoute.get("/pdf", async (c) => {
       return c.json({ message: "Invalid reportUrl", reportUrl }, 500);
     }
 
-    const endpoint = `https://api.cloudflare.com/client/v4/accounts/${c.env.CF_ACCOUNT_ID}/browser-rendering/pdf`;
+    const endpoint = `https://api.cloudflare.com/client/v4/accounts/${c.env.CLOUDFLARE_ACCOUNT_ID}/browser-rendering/pdf`;
 
     // ⚠️ NÃO logue reportUrl completo (vaza token). Logue só o path.
     console.log("Generating PDF via Browser Rendering:", `/api/report-html?simulationId=${simulationId}&pdfToken=***`);

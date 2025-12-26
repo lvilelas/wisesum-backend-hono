@@ -2,15 +2,14 @@ name = "wisesum-api"
 main = "src/index.ts"
 compatibility_date = "2025-12-23"
 
+[env.staging]
+name = "wisesum-api-staging"
+routes = [
+  { pattern = "api-staging.wisesum.app/*", zone_name = "wisesum.app" }
+]
+
+[env.production]
+name = "wisesum-api"
 routes = [
   { pattern = "api.wisesum.app/*", zone_name = "wisesum.app" }
 ]
-
-[vars]
-FRONTEND_URL = "https://wisesum.app"
-SUPABASE_URL = "https://uxurxfqllowqhygpyuzo.supabase.co"
-FRONTEND_ORIGIN = "https://wisesum.app"
-CF_ACCOUNT_ID = "99e3a11039fee81556506ee7da05b54b"
-STRIPE_PRICE_MONTHLY = "price_1SfOHLFivo45jEC9Ufe8xClr"
-STRIPE_PRICE_ONE_TIME = "price_1SfOHlFivo45jEC9jqUkHa3l"
-

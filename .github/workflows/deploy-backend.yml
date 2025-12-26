@@ -1,0 +1,89 @@
+name: Deploy Backend (Cloudflare Workers)
+
+on:
+  push:
+    branches: [dev, main]
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    # Isso habilita vars.* e secrets.* DO ENVIRONMENT correspondente
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install
+        run: npm install
+
+      - name: Build (if present)
+        run: npm run build --if-present
+
+      # Define o env do Wrangler a partir da branch
+      - name: Set deploy env
+        id: setenv
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            echo "WRANGLER_ENV=production" >> $GITHUB_OUTPUT
+          else
+            echo "WRANGLER_ENV=staging" >> $GITHUB_OUTPUT
+          fi
+
+      # Aplica SECRETS no Cloudflare (idempotente: sobrescreve com o valor do GitHub)
+      - name: Apply Cloudflare secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+          CF_BROWSER_RENDERING_API_TOKEN: ${{ secrets.CF_BROWSER_RENDERING_API_TOKEN }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          PDF_TOKEN_SECRET: ${{ secrets.PDF_TOKEN_SECRET }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          ENV="${{ steps.setenv.outputs.WRANGLER_ENV }}"
+
+          echo -n "$CF_BROWSER_RENDERING_API_TOKEN" | npx wrangler secret put CF_BROWSER_RENDERING_API_TOKEN --env "$ENV"
+          echo -n "$CLERK_SECRET_KEY"              | npx wrangler secret put CLERK_SECRET_KEY --env "$ENV"
+          echo -n "$PDF_TOKEN_SECRET"              | npx wrangler secret put PDF_TOKEN_SECRET --env "$ENV"
+          echo -n "$STRIPE_SECRET_KEY"             | npx wrangler secret put STRIPE_SECRET_KEY --env "$ENV"
+          echo -n "$STRIPE_WEBHOOK_SECRET"         | npx wrangler secret put STRIPE_WEBHOOK_SECRET --env "$ENV"
+          echo -n "$SUPABASE_ANON_KEY"             | npx wrangler secret put SUPABASE_ANON_KEY --env "$ENV"
+          echo -n "$SUPABASE_SERVICE_ROLE_KEY"     | npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY --env "$ENV"
+
+      # Deploy com as VARS (não-secret) passadas explicitamente
+      - name: Deploy (vars included)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+          CLERK_PUBLISHABLE_KEY: ${{ vars.CLERK_PUBLISHABLE_KEY }}
+          FRONTEND_ORIGIN: ${{ vars.FRONTEND_ORIGIN }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+          STRIPE_PRICE_MONTHLY: ${{ vars.STRIPE_PRICE_MONTHLY }}
+          STRIPE_PRICE_ONE_TIME: ${{ vars.STRIPE_PRICE_ONE_TIME }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+        run: |
+          ENV="${{ steps.setenv.outputs.WRANGLER_ENV }}"
+
+          npx wrangler deploy --env "$ENV" \
+            --var CLERK_PUBLISHABLE_KEY="$CLERK_PUBLISHABLE_KEY" \
+            --var FRONTEND_ORIGIN="$FRONTEND_ORIGIN" \
+            --var FRONTEND_URL="$FRONTEND_URL" \
+            --var STRIPE_PRICE_MONTHLY="$STRIPE_PRICE_MONTHLY" \
+            --var STRIPE_PRICE_ONE_TIME="$STRIPE_PRICE_ONE_TIME" \
+            --var SUPABASE_URL="$SUPABASE_URL"
