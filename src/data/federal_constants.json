@@ -1,7 +1,7 @@
 {
   "2025": {
     "seTax": {
-      "ssWageBase": 168600,
+      "ssWageBase": 176100,
       "seNetEarningsFactor": 0.9235,
       "ssRate": 0.124,
       "medicareRate": 0.029,
