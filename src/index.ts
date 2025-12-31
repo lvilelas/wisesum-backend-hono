@@ -8,7 +8,7 @@ import { pdfRoute } from "./routes/pdf";
 import { reportHtmlRoute } from "./routes/report-html";
 import { reportRoute } from "./routes/report";
 import { accountRoute } from "./routes/account";
-
+import { seTaxRoute } from "./routes/seTax";
 import { getSupabase } from "./lib/supabaseEdge";
 
 type Env = {
@@ -232,5 +232,6 @@ app.route("/api", pdfRoute);
 app.route("/api", reportHtmlRoute);
 app.route("/api", reportRoute);
 app.route("/api", accountRoute);
+app.route("/api", seTaxRoute);
 
 export default app;

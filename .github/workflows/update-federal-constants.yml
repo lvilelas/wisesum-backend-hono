@@ -1,0 +1,32 @@
+name: Update federal constants
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: "0 9 1 * *" # todo dia 1 às 09:00 UTC (1x/mês)
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Update JSON (with guardrails)
+        run: node scripts/update-federal-constants.mjs
+        env:
+          TAX_YEAR: "2025"
+
+      - name: Commit changes (if any)
+        run: |
+          git config user.name "wisesum-bot"
+          git config user.email "bot@wisesum.app"
+          git add data/federal_constants.json
+          git commit -m "chore: update federal constants (SSA/IRS)" || exit 0
+          git push

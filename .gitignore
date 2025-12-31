@@ -29,3 +29,4 @@ build/
 .tmp/
 
 clerk_jwt_key.pem
+.dev.vars
