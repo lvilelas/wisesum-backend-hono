@@ -2,16 +2,13 @@ import { SignJWT, jwtVerify } from "jose";
 
 export type PdfTokenPayload = {
   simulationId: string;
+  reportType?: string; // ✅ novo (opcional para não quebrar antigo)
 };
 
 function keyFromSecret(secret: string) {
   return new TextEncoder().encode(secret);
 }
 
-/**
- * Assina um token curto (HS256) para liberar a página/endpoint de PDF.
- * expSeconds: epoch seconds (ex: Math.floor(Date.now()/1000) + 60*5)
- */
 export async function signPdfToken(
   payload: PdfTokenPayload,
   secret: string,
@@ -19,16 +16,15 @@ export async function signPdfToken(
 ): Promise<string> {
   if (!secret) throw new Error("Missing PDF_TOKEN_SECRET");
 
-  return new SignJWT({ simulationId: String(payload.simulationId) })
+  return new SignJWT({
+    simulationId: String(payload.simulationId),
+    ...(payload.reportType ? { reportType: String(payload.reportType) } : {}),
+  })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
-    .setExpirationTime(expSeconds) // jose aceita epoch seconds
+    .setExpirationTime(expSeconds)
     .sign(keyFromSecret(secret));
 }
 
-/**
- * Verifica token (HS256) e retorna payload.
- * Lança erro se inválido/expirado.
- */
 export async function verifyPdfToken(token: string, secret: string): Promise<PdfTokenPayload> {
   if (!secret) throw new Error("Missing PDF_TOKEN_SECRET");
   if (!token) throw new Error("Missing pdfToken");
@@ -42,5 +38,7 @@ export async function verifyPdfToken(token: string, secret: string): Promise<Pdf
     throw new Error("Invalid pdfToken payload");
   }
 
-  return { simulationId };
+  const reportType = typeof payload?.reportType === "string" ? payload.reportType : undefined;
+
+  return { simulationId, reportType };
 }

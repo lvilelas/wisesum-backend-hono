@@ -88,7 +88,9 @@ jobs:
           echo -n "$STRIPE_WEBHOOK_SECRET"          | npx wrangler secret put STRIPE_WEBHOOK_SECRET --env "$ENV"
           echo -n "$SUPABASE_ANON_KEY"              | npx wrangler secret put SUPABASE_ANON_KEY --env "$ENV"
           echo -n "$SUPABASE_SERVICE_ROLE_KEY"      | npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY --env "$ENV"
-
+          echo -n "$CLOUDFLARE_API_TOKEN"           | npx wrangler secret put CLOUDFLARE_API_TOKEN --env "$ENV"
+          echo -n "$CLOUDFLARE_ACCOUNT_ID"          | npx wrangler secret put CLOUDFLARE_ACCOUNT_ID --env "$ENV"
+          
           # --- Vars do backend (gravando também como "secret" para ficar estável no runtime) ---
           echo -n "$CLERK_PUBLISHABLE_KEY"          | npx wrangler secret put CLERK_PUBLISHABLE_KEY --env "$ENV"
           echo -n "$FRONTEND_ORIGIN"                | npx wrangler secret put FRONTEND_ORIGIN --env "$ENV"
@@ -96,7 +98,8 @@ jobs:
           echo -n "$STRIPE_PRICE_MONTHLY"           | npx wrangler secret put STRIPE_PRICE_MONTHLY --env "$ENV"
           echo -n "$STRIPE_PRICE_ONE_TIME"          | npx wrangler secret put STRIPE_PRICE_ONE_TIME --env "$ENV"
           echo -n "$SUPABASE_URL"                   | npx wrangler secret put SUPABASE_URL --env "$ENV"
-
+        
+          
           # Debug (lista nomes; não mostra valores)
           npx wrangler secret list --env "$ENV"
 

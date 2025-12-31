@@ -1,7 +1,7 @@
 // src/lib/tax/stateTaxEngine.ts
 // ✅ Cloudflare Workers: sem fs/path/process.cwd()
 
-import compiled2025 from "./compiled_2025_all_states.json" assert { type: "json" };
+import compiled2025 from "../../data/compiled_2025_all_states.json" assert { type: "json" };
 
 export type FilingStatus = "single";
 export type TaxType = "flat" | "progressive";

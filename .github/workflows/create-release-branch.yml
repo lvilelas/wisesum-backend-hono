@@ -1,0 +1,62 @@
+name: Create Release Branch (after staging deploy)
+
+on:
+  workflow_run:
+    workflows: ["Deploy Backend (Cloudflare Workers)"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: create-release-branch
+  cancel-in-progress: true
+
+jobs:
+  create_release_branch:
+    # só quando o deploy foi sucesso + rodou a partir do branch dev
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'dev'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout dev at deployed commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Determine version from package.json
+        id: ver
+        run: |
+          set -euxo pipefail
+          VERSION=$(node -p "require('./package.json').version")
+          if [ -z "$VERSION" ]; then
+            echo "::error::package.json version not found"
+            exit 1
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "branch=release/v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create release branch if not exists
+        env:
+          GH_TOKEN: ${{ secrets.PR_BOT_TOKEN }}
+          BRANCH: ${{ steps.ver.outputs.branch }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euxo pipefail
+
+          # se branch já existe, não faz nada
+          if gh api -X GET "repos/$REPO/branches/$BRANCH" >/dev/null 2>&1; then
+            echo "Branch already exists: $BRANCH"
+            exit 0
+          fi
+
+          # cria ref nova apontando pro SHA do deploy em dev
+          gh api -X POST "repos/$REPO/git/refs" \
+            -f ref="refs/heads/$BRANCH" \
+            -f sha="$SHA"
+
+          echo "Created $BRANCH at $SHA"
