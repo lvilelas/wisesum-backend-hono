@@ -21,19 +21,33 @@ jobs:
           BRANCH: ${{ github.ref_name }}
           REPO: ${{ github.repository }}
         run: |
+          set +e
+
           echo "Repo: $REPO"
           echo "Branch: $BRANCH"
 
-          # existe PR aberto dessa head -> dev?
-          EXISTING=$(gh pr list --repo "$REPO" --head "$BRANCH" --base dev --state open --json number --jq '.[0].number' || true)
+          # Procura PR aberto dessa head -> dev
+          # Usa // empty pra não devolver "null"
+          EXISTING=$(gh pr list \
+            --repo "$REPO" \
+            --head "$BRANCH" \
+            --base dev \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty' 2>/dev/null)
+
           if [ -n "$EXISTING" ]; then
-            echo "PR already exists (#$EXISTING) for $BRANCH"
+            echo "PR already exists (#$EXISTING) for $BRANCH -> dev. Skipping."
             exit 0
           fi
 
+          # Tenta criar PR; se já existir/der erro, não falha o job
           gh pr create \
             --repo "$REPO" \
             --base dev \
             --head "$BRANCH" \
             --title "feat: $BRANCH → dev" \
-            --body $'PR automático criado após push em branch feature.\n\n✔ Validação de build será executada automaticamente.'
+            --body $'PR automático criado após push em branch feature.\n\n✔ Validação de build será executada automaticamente.' \
+            || echo "Skip: could not create PR (maybe already exists or token/permissions issue)."
+
+          exit 0
