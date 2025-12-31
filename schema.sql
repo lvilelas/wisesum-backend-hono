@@ -64,3 +64,37 @@ alter table public.simulations
 
 create index if not exists idx_simulations_report_snapshot
   on public.simulations using gin (report_snapshot);
+
+
+create table if not exists public.se_tax_simulations (
+  id bigserial primary key,
+  clerk_user_id text not null,
+
+  tax_year int not null default 2025,
+  filing_status text not null, -- 'single' | 'mfj' | 'mfs' | 'hoh'
+
+  net_profit numeric not null,
+  w2_wages numeric not null default 0,
+
+  report_snapshot jsonb,
+  report_version int default 1,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz
+);
+
+create index if not exists se_tax_simulations_user_created_at_idx
+  on public.se_tax_simulations (clerk_user_id, created_at desc);
+
+create index if not exists se_tax_simulations_user_year_idx
+  on public.se_tax_simulations (clerk_user_id, tax_year);
+
+
+
+alter table public.se_tax_simulations
+  add column total numeric,
+  add column se_tax numeric,
+  add column net_earnings numeric;
+
+create index if not exists se_tax_simulations_user_total_idx
+  on public.se_tax_simulations (clerk_user_id, total);  

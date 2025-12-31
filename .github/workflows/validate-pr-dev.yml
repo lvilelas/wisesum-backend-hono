@@ -1,45 +1,59 @@
-name: Validate PR → dev (build)
+name: Validate PR → dev (backend)
 
 on:
   pull_request:
     branches: [dev]
-
-concurrency:
-  group: backend-pr-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [dev]
 
 permissions:
   contents: read
 
+concurrency:
+  group: backend-validate-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
-
-    # Usa o Environment staging (para ter vars.* e secrets.* disponíveis)
     environment: staging
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: "npm"
+          # Ajuste se package-lock não está na raiz:
+          # cache-dependency-path: "package-lock.json"
 
-      - name: Install
-        run: npm install
+      - name: Install dependencies
+        run: npm ci
 
-      # (Opcional) Verificação rápida se envs críticas existem
-      - name: Debug required env (temporary)
-        run: |
-          echo "has SUPABASE_URL? -> $([[ -n '${{ vars.SUPABASE_URL }}' ]] && echo YES || echo NO)"
-          echo "has CLERK_SECRET_KEY? -> $([[ -n '${{ secrets.CLERK_SECRET_KEY }}' ]] && echo YES || echo NO)"
+      # ✅ Se quiser manter temporariamente, descomente
+      # - name: Debug required env (temporary)
+      #   run: |
+      #     echo "has SUPABASE_URL? -> $([[ -n '${{ vars.SUPABASE_URL }}' ]] && echo YES || echo NO)"
+      #     echo "has CLERK_SECRET_KEY? -> $([[ -n '${{ secrets.CLERK_SECRET_KEY }}' ]] && echo YES || echo NO)"
 
-      # Se você tem scripts, melhor validar:
       - name: Lint (if present)
         run: npm run lint --if-present
 
       - name: Typecheck (if present)
         run: npm run typecheck --if-present
 
+      # ✅ Para backend CF Worker, build normalmente roda TS build/bundle.
       - name: Build (if present)
         run: npm run build --if-present
+
+      # ✅ Opcional: se você usa wrangler para validar bundle/compat
+      - name: Wrangler build (if present)
+        run: npx wrangler deploy --dry-run
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        continue-on-error: true

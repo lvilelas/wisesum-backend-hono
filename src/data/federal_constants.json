@@ -1,0 +1,22 @@
+{
+  "2025": {
+    "seTax": {
+      "ssWageBase": 176100,
+      "seNetEarningsFactor": 0.9235,
+      "ssRate": 0.124,
+      "medicareRate": 0.029,
+      "additionalMedicareRate": 0.009,
+      "additionalMedicareThreshold": {
+        "single": 200000,
+        "hoh": 200000,
+        "mfj": 250000,
+        "mfs": 125000
+      },
+      "sources": {
+        "ssWageBase": "https://www.ssa.gov/oact/cola/cbb.html",
+        "additionalMedicareThreshold": "https://www.irs.gov/taxtopics/tc560"
+      },
+      "verifiedAt": "2025-01-01"
+    }
+  }
+}

@@ -12,23 +12,28 @@ permissions:
 jobs:
   create-pr:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
       - name: Create PR if not exists
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.PR_BOT_TOKEN }}
           BRANCH: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
         run: |
-          # Se já existe PR desta branch para dev, não faz nada
-          if gh pr view "$BRANCH" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "PR already exists for $BRANCH"
+          echo "Repo: $REPO"
+          echo "Branch: $BRANCH"
+
+          # existe PR aberto dessa head -> dev?
+          EXISTING=$(gh pr list --repo "$REPO" --head "$BRANCH" --base dev --state open --json number --jq '.[0].number' || true)
+          if [ -n "$EXISTING" ]; then
+            echo "PR already exists (#$EXISTING) for $BRANCH"
             exit 0
           fi
 
           gh pr create \
+            --repo "$REPO" \
             --base dev \
             --head "$BRANCH" \
             --title "feat: $BRANCH → dev" \
-            --body "PR automático criado após push em branch feature.\n\n✔ Validação de build será executada automaticamente."
+            --body $'PR automático criado após push em branch feature.\n\n✔ Validação de build será executada automaticamente.'
