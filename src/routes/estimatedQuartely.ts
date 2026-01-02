@@ -717,7 +717,8 @@ estimatedQuarterlyRoute.post(
       // Deduction is half of SS+Medicare portion (NOT including additional Medicare).
       // Here we approximate using total SE (including addl) / 2 would slightly over-deduct.
       // We'll follow common treatment: deductibleHalf is half of (SS + Medicare).
-      const deductibleHalf = round2(round2(se.total - se.additionalMedicareTax) * 0.5);
+      const deductibleHalf = round2((se.ssTax + se.medicareTax) * 0.5);
+
 
       const aboveLineDeductions = round2(
         deductibleHalf +
