@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import { billingRoute } from "./routes/billing";
 import { calcRoute } from "./routes/calc";
 import { pdfRoute } from "./routes/pdf";
+import { estimatedQuarterlyRoute } from "./routes/estimatedQuartely";
 import { reportHtmlRoute } from "./routes/report-html";
 import { reportRoute } from "./routes/report";
 import { accountRoute } from "./routes/account";
@@ -233,5 +234,6 @@ app.route("/api", reportHtmlRoute);
 app.route("/api", reportRoute);
 app.route("/api", accountRoute);
 app.route("/api", seTaxRoute);
+app.route("/api", estimatedQuarterlyRoute);
 
 export default app;

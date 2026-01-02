@@ -21,7 +21,7 @@ jobs:
       - name: Update JSON (with guardrails)
         run: node scripts/update-federal-constants.mjs
         env:
-          TAX_YEAR: "2025"
+          TAX_YEAR: "2026"
 
       - name: Commit changes (if any)
         run: |

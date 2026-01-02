@@ -1,6 +1,18 @@
-import compiled2025 from "../../data/compiled_2025_all_states.json" assert { type: "json" };
+import compiled2026 from "../../data/compiled_2026_all_states.json" assert { type: "json" };
 
-// Tipagem leve (você pode substituir por StateTaxRules real se quiser)
-export const COMPILED_RULES: Record<number, Record<string, any>> = {
-  2025: compiled2025 as Record<string, any>,
+/**
+ * Compiled state tax rules by year.
+ *
+ * IMPORTANT:
+ * - This file MUST NOT contain calculations or estimates.
+ * - It only maps a tax year to its precompiled JSON rules.
+ * - Callers must explicitly choose the tax year.
+ */
+
+// Shape mínimo esperado para regras estaduais compiladas.
+// (mantido propositalmente genérico para evitar regressão)
+export type CompiledStateRules = Record<string, unknown>;
+
+export const COMPILED_RULES: Record<number, CompiledStateRules> = {
+  2026: compiled2026 as CompiledStateRules,
 };

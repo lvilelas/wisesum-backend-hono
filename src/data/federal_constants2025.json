@@ -1,5 +1,5 @@
 {
-  "2026": {
+  "2025": {
     "seTax": {
       "ssWageBase": 176100,
       "seNetEarningsFactor": 0.9235,
@@ -16,7 +16,7 @@
         "ssWageBase": "https://www.ssa.gov/oact/cola/cbb.html",
         "additionalMedicareThreshold": "https://www.irs.gov/taxtopics/tc560"
       },
-      "verifiedAt": "2026-12-17"
+      "verifiedAt": "2025-01-01"
     }
   }
 }
