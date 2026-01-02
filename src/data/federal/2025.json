@@ -1,0 +1,47 @@
+{
+  "taxYear": 2025,
+  "standardDeduction": {
+    "single": 15750,
+    "mfs": 15750,
+    "mfj": 31500,
+    "hoh": 23625
+  },
+  "brackets": {
+    "single": [
+      { "upTo": 11925, "rate": 0.10 },
+      { "upTo": 48475, "rate": 0.12 },
+      { "upTo": 103350, "rate": 0.22 },
+      { "upTo": 197300, "rate": 0.24 },
+      { "upTo": 250525, "rate": 0.32 },
+      { "upTo": 626350, "rate": 0.35 },
+      { "upTo": null, "rate": 0.37 }
+    ],
+    "mfj": [
+      { "upTo": 23850, "rate": 0.10 },
+      { "upTo": 96950, "rate": 0.12 },
+      { "upTo": 206700, "rate": 0.22 },
+      { "upTo": 394600, "rate": 0.24 },
+      { "upTo": 501050, "rate": 0.32 },
+      { "upTo": 751600, "rate": 0.35 },
+      { "upTo": null, "rate": 0.37 }
+    ],
+    "hoh": [
+      { "upTo": 17000, "rate": 0.10 },
+      { "upTo": 64850, "rate": 0.12 },
+      { "upTo": 103350, "rate": 0.22 },
+      { "upTo": 197300, "rate": 0.24 },
+      { "upTo": 250500, "rate": 0.32 },
+      { "upTo": 626350, "rate": 0.35 },
+      { "upTo": null, "rate": 0.37 }
+    ],
+    "mfs": [
+      { "upTo": 11925, "rate": 0.10 },
+      { "upTo": 48475, "rate": 0.12 },
+      { "upTo": 103350, "rate": 0.22 },
+      { "upTo": 197300, "rate": 0.24 },
+      { "upTo": 250525, "rate": 0.32 },
+      { "upTo": 375800, "rate": 0.35 },
+      { "upTo": null, "rate": 0.37 }
+    ]
+  }
+}

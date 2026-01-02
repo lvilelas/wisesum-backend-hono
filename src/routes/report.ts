@@ -8,16 +8,17 @@ import {
   StateCode,
 } from "../services/simulationService";
 
+const TAX_YEAR = 2026;
+
 export const reportRoute = new Hono<{ Bindings: Env }>();
 
 /**
  * GET /api/report?simulationId=123&pdfToken=...
  *
- * ✅ Novo comportamento:
- * 1) valida pdfToken
- * 2) busca report_snapshot no Supabase e retorna (sem recalcular)
- * 3) fallback: se não existir snapshot (simulação antiga), recalcula 1x,
- *    salva report_snapshot e retorna.
+ * ✅ Behavior:
+ * 1) validate pdfToken
+ * 2) return report_snapshot if exists (no recalculation)
+ * 3) fallback: recalc ONCE for legacy simulations, save snapshot, return
  */
 reportRoute.get("/report", async (c) => {
   try {
@@ -32,10 +33,11 @@ reportRoute.get("/report", async (c) => {
       return c.json({ message: "Missing PDF_TOKEN_SECRET" }, 500);
     }
 
-    // ✅ valida token (sem logs de secret/token)
-    const payload = await verifyPdfToken(pdfToken, c.env.PDF_TOKEN_SECRET).catch(
-      () => null
-    );
+    // ✅ validate token
+    const payload = await verifyPdfToken(
+      pdfToken,
+      c.env.PDF_TOKEN_SECRET
+    ).catch(() => null);
 
     if (!payload || String(payload.simulationId) !== String(simulationId)) {
       return c.json({ message: "Invalid pdfToken" }, 401);
@@ -43,7 +45,7 @@ reportRoute.get("/report", async (c) => {
 
     const supabase = getSupabase(c.env);
 
-    // ✅ pega snapshot se existir
+    // ✅ fetch snapshot
     const { data, error } = await supabase
       .from("simulations")
       .select("id, state, w2_salary, income_1099, expenses, report_snapshot")
@@ -54,6 +56,7 @@ reportRoute.get("/report", async (c) => {
       return c.json({ message: "Simulation not found" }, 404);
     }
 
+    // ✅ if snapshot exists, return as-is (source of truth)
     if (data.report_snapshot) {
       return new Response(JSON.stringify(data.report_snapshot), {
         status: 200,
@@ -64,7 +67,7 @@ reportRoute.get("/report", async (c) => {
       });
     }
 
-    // ✅ fallback: simulação antiga sem snapshot -> recalcula 1x, salva, devolve
+    // ⚠️ fallback for legacy simulations (no snapshot)
     const state = String(data.state || "").toUpperCase() as StateCode;
 
     const computed = await computeSimulation({
@@ -72,6 +75,7 @@ reportRoute.get("/report", async (c) => {
       income1099: Number(data.income_1099 || 0),
       expenses: Number(data.expenses || 0),
       state,
+      year: TAX_YEAR, // 🔑 CRITICAL FIX
     });
 
     const premium = buildPremiumResult({
@@ -80,7 +84,7 @@ reportRoute.get("/report", async (c) => {
       simulationId: String(data.id),
     });
 
-    // salva snapshot best-effort
+    // save snapshot (best-effort)
     await supabase
       .from("simulations")
       .update({

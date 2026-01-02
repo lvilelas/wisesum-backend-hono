@@ -5,12 +5,11 @@ import type { Env } from "../env";
 import { requireApiAuth } from "../lib/requireApiAuth";
 import { getSupabase } from "../lib/supabaseEdge";
 
-// ✅ Ajuste o path conforme seu repo.
-// Ex.: se o arquivo estiver em "data/federal_constants.json" na raiz,
-// e este arquivo estiver em "src/routes", talvez seja "../../data/...".
-import federalConstants from "../data/federal_constants.json";
+// ✅ Em Workers/ESM, prefira import JSON com assert
+// Ajuste o path conforme seu repo (este assume ../data/... relativo a src/routes)
+import federalConstants from "../data/federal_constants.json" assert { type: "json" };
 
-const TAX_YEAR = 2025;
+const TAX_YEAR = 2026;
 
 // ---------- Schema ----------
 const filingStatusSchema = z.enum(["single", "mfj", "mfs", "hoh"]);
@@ -19,16 +18,32 @@ const seTaxInputSchema = z.object({
   netProfit: z.number().min(0),
   w2Wages: z.number().min(0).default(0),
   filingStatus: filingStatusSchema,
-  // opcional (se quiser abrir no futuro)
-  // taxYear: z.number().int().optional(),
+  // no futuro: taxYear: z.number().int().optional(),
 });
 
 type FilingStatus = z.infer<typeof filingStatusSchema>;
 
 // ---------- Helpers ----------
 const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+const clamp0 = (n: number) => (n < 0 ? 0 : n);
 
-// ---------- DB helpers (no mesmo estilo do seu calc.ts) ----------
+type SeTaxConstants = {
+  ssWageBase: number;
+  seNetEarningsFactor: number; // ex: 0.9235
+  ssRate: number; // ex: 0.124
+  medicareRate: number; // ex: 0.029
+  additionalMedicareRate: number; // ex: 0.009
+  additionalMedicareThreshold: Record<FilingStatus, number>;
+};
+
+type FederalConstantsFile = Record<
+  string,
+  {
+    seTax?: Partial<SeTaxConstants>;
+  }
+>;
+
+// ---------- DB helpers ----------
 async function saveSeTaxSimulation(params: {
   supabase: ReturnType<typeof getSupabase>;
   userId: string;
@@ -41,6 +56,7 @@ async function saveSeTaxSimulation(params: {
   const { supabase, userId, taxYear, filingStatus, netProfit, w2Wages, total } =
     params;
 
+  // snapshot mínimo inicial (será substituído pelo premium/free completo após calcular)
   const reportSnapshot = {
     taxYear,
     filingStatus,
@@ -72,7 +88,6 @@ async function saveSeTaxSimulation(params: {
   return data?.id ? String(data.id) : null;
 }
 
-
 async function saveSeTaxReportSnapshot(params: {
   supabase: ReturnType<typeof getSupabase>;
   simulationId: string;
@@ -97,47 +112,85 @@ async function saveSeTaxReportSnapshot(params: {
 }
 
 // ---------- Compute using JSON ----------
+function getSeTaxConstants(taxYear: number): SeTaxConstants {
+  const file = federalConstants as unknown as FederalConstantsFile;
+  const C = file[String(taxYear)]?.seTax;
+
+  if (!C) {
+    throw new Error(`SE tax constants not found for tax year ${taxYear}`);
+  }
+
+  const ssWageBase = Number(C.ssWageBase);
+  const seNetEarningsFactor = Number(C.seNetEarningsFactor);
+  const ssRate = Number(C.ssRate);
+  const medicareRate = Number(C.medicareRate);
+  const additionalMedicareRate = Number(C.additionalMedicareRate);
+
+  if (
+    !Number.isFinite(ssWageBase) ||
+    !Number.isFinite(seNetEarningsFactor) ||
+    !Number.isFinite(ssRate) ||
+    !Number.isFinite(medicareRate) ||
+    !Number.isFinite(additionalMedicareRate)
+  ) {
+    throw new Error(`Invalid SE tax constants for tax year ${taxYear}`);
+  }
+
+  const thresholds = C.additionalMedicareThreshold as any;
+  if (!thresholds || typeof thresholds !== "object") {
+    throw new Error(`Missing additionalMedicareThreshold map for ${taxYear}`);
+  }
+
+  // valida presença mínima dos statuses suportados
+  for (const s of ["single", "mfj", "mfs", "hoh"] as FilingStatus[]) {
+    const t = Number(thresholds[s]);
+    if (!Number.isFinite(t)) {
+      throw new Error(
+        `Missing/invalid additionalMedicareThreshold for filingStatus=${s} (year ${taxYear})`
+      );
+    }
+  }
+
+  return {
+    ssWageBase,
+    seNetEarningsFactor,
+    ssRate,
+    medicareRate,
+    additionalMedicareRate,
+    additionalMedicareThreshold: thresholds as Record<FilingStatus, number>,
+  };
+}
+
 function computeSelfEmploymentTax(params: {
   netProfit: number;
   w2Wages: number;
   filingStatus: FilingStatus;
   taxYear: number;
 }) {
-  const { netProfit, w2Wages, filingStatus, taxYear } = params;
+  const { filingStatus, taxYear } = params;
 
-  const C = (federalConstants as any)[String(taxYear)]?.seTax;
-  if (!C) {
-    throw new Error(`SE tax constants not found for tax year ${taxYear}`);
-  }
+  const netProfit = clamp0(Number(params.netProfit ?? 0));
+  const w2Wages = clamp0(Number(params.w2Wages ?? 0));
 
-  const {
-    ssWageBase,
-    seNetEarningsFactor,
-    ssRate,
-    medicareRate,
-    additionalMedicareRate,
-    additionalMedicareThreshold,
-  } = C;
+  const C = getSeTaxConstants(taxYear);
 
-  const netEarnings = netProfit * seNetEarningsFactor;
+  const netEarnings = netProfit * C.seNetEarningsFactor;
 
   // SS (cap-aware)
-  const ssCapRemaining = Math.max(0, ssWageBase - w2Wages);
+  const ssCapRemaining = Math.max(0, C.ssWageBase - w2Wages);
   const ssTaxable = Math.max(0, Math.min(netEarnings, ssCapRemaining));
-  const ssTax = ssTaxable * ssRate;
+  const ssTax = ssTaxable * C.ssRate;
 
   // Medicare (no cap)
-  const medicareTax = netEarnings * medicareRate;
+  const medicareTax = netEarnings * C.medicareRate;
 
   // Additional Medicare
-  const threshold = additionalMedicareThreshold?.[filingStatus];
-  if (typeof threshold !== "number") {
-    throw new Error(`Missing additionalMedicareThreshold for ${filingStatus}`);
-  }
+  const threshold = C.additionalMedicareThreshold[filingStatus];
   const combinedEarned = w2Wages + netEarnings;
   const addlTaxable = Math.max(0, combinedEarned - threshold);
-  const additionalMedicareTax = addlTaxable * additionalMedicareRate;
+  const additionalMedicareTax = addlTaxable * C.additionalMedicareRate;
 
+  // SE tax = SS + Medicare (Additional Medicare é separado)
   const seTax = ssTax + medicareTax;
   const deductibleHalf = seTax * 0.5;
   const total = seTax + additionalMedicareTax;
@@ -151,7 +204,7 @@ function computeSelfEmploymentTax(params: {
 
     netEarnings: round2(netEarnings),
 
-    ssWageBase: Number(ssWageBase),
+    ssWageBase: Number(C.ssWageBase),
     ssCapRemaining: round2(ssCapRemaining),
     ssTaxable: round2(ssTaxable),
     ssTax: round2(ssTax),
@@ -197,7 +250,7 @@ seTaxRoute.post("/calc/self-employment-tax", requireApiAuth, async (c) => {
 
     const supabase = getSupabase(c.env);
 
-    // Check entitlements (igual seu calc.ts)
+    // Entitlement (igual calc.ts)
     const { data: entitlement, error: entitlementError } = await supabase
       .from("entitlements")
       .select("*")
@@ -260,7 +313,6 @@ seTaxRoute.post("/calc/self-employment-tax", requireApiAuth, async (c) => {
         total: computed.total,
       })) ?? "";
 
-    // ✅ retorno premium vs free (mesmo esquema do seu calc.ts)
     if (isPremium) {
       const premium = {
         tier: "premium",
@@ -279,7 +331,7 @@ seTaxRoute.post("/calc/self-employment-tax", requireApiAuth, async (c) => {
       return c.json(premium);
     }
 
-    // Free: retorna só o essencial
+    // Free: retorna só o essencial (mas suficiente pro HTML/PDF básico)
     const free = {
       tier: "free",
       simulationId,

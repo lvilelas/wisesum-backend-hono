@@ -4,9 +4,8 @@ import type { Env } from "../env";
 import { requireApiAuth } from "../lib/requireApiAuth";
 import { getSupabase } from "../lib/supabaseEdge";
 
-// ⚠️ pode usar fs internamente e quebrar no Worker.
-// Vamos tentar usar, mas sem deixar isso derrubar a rota.
 import { loadStateRules } from "../lib/tax/stateTaxEngine";
+import { loadStateBaseRules } from "../lib/tax/stateBaseCalc";
 
 import {
   computeSimulation,
@@ -15,7 +14,7 @@ import {
   StateCode,
 } from "../services/simulationService";
 
-const TAX_YEAR = 2025;
+const TAX_YEAR = 2026;
 
 const stateSchema = z
   .string()
@@ -30,7 +29,6 @@ const calcInputSchema = z.object({
   expenses: z.number().min(0).default(0),
 });
 
-// ✅ salva a simulação e retorna o id
 async function saveSimulation(params: {
   supabase: ReturnType<typeof getSupabase>;
   userId: string;
@@ -72,7 +70,6 @@ async function saveSimulation(params: {
   return insertData?.[0]?.id ? String(insertData[0].id) : null;
 }
 
-// ✅ salva snapshot do report (best-effort)
 async function saveReportSnapshot(params: {
   supabase: ReturnType<typeof getSupabase>;
   simulationId: string;
@@ -102,7 +99,6 @@ export const calcRoute = new Hono<{
 }>();
 
 calcRoute.post("/calc", requireApiAuth, async (c) => {
-  // logs OK (não contém secrets/tokens)
   console.log("== /api/calc ==");
   console.log("method:", c.req.method);
   console.log("origin:", c.req.header("origin"));
@@ -110,7 +106,6 @@ calcRoute.post("/calc", requireApiAuth, async (c) => {
   console.log("content-length:", c.req.header("content-length"));
 
   try {
-    // Alguns clients mandam body como string: fazemos parse robusto
     const raw = await c.req.text();
     const body = raw ? JSON.parse(raw) : null;
 
@@ -127,28 +122,29 @@ calcRoute.post("/calc", requireApiAuth, async (c) => {
 
     const supabase = getSupabase(c.env);
 
-    // ✅ garante que o arquivo do estado existe (JSON individual)
-    // Cloudflare Worker: se loadStateRules usar fs, isso pode dar exception.
-    // Mantemos a validação, mas sem derrubar o endpoint por limitação de runtime.
+    // ✅ state rules existence check (best-effort)
     try {
       const rules = loadStateRules(TAX_YEAR, state);
+      const base = loadStateBaseRules(TAX_YEAR, state);
+      if (!base) {
+        return c.json({ message: `State base rules not available for ${state} (${TAX_YEAR}).` }, 400);
+      }
       if (!rules) {
         return c.json(
           {
-            message: `State rules not available for ${state} (${TAX_YEAR}). Missing file at src/lib/tax/${TAX_YEAR}/${state}.json`,
+            message: `State rules not available for ${state} (${TAX_YEAR}).`,
           },
           400
         );
       }
     } catch (e) {
-      // Se você QUISER ser estrito e bloquear, troque por return 500/400 aqui.
       console.warn(
         "loadStateRules check skipped (likely fs not available on Worker):",
         e
       );
     }
 
-    // Check entitlements
+    // Entitlements
     const { data: entitlement, error: entitlementError } = await supabase
       .from("entitlements")
       .select("*")
@@ -191,15 +187,15 @@ calcRoute.post("/calc", requireApiAuth, async (c) => {
       }
     }
 
-    // ✅ cálculo (IMPORTANTE: await)
+    // ✅ IMPORTANT: pass year explicitly
     const computed = await computeSimulation({
       w2Salary,
       income1099,
       state: state as StateCode,
       expenses,
+      year: TAX_YEAR,
     });
 
-    // ✅ salva a simulação (se falhar, ainda retorna resultado)
     const simulationId =
       (await saveSimulation({
         supabase,
@@ -211,7 +207,6 @@ calcRoute.post("/calc", requireApiAuth, async (c) => {
         annualDifference: computed.annualDifference,
       })) ?? "";
 
-    // ✅ monta resultado final
     if (isPremium) {
       const premium = buildPremiumResult({
         computed,
@@ -219,7 +214,6 @@ calcRoute.post("/calc", requireApiAuth, async (c) => {
         simulationId,
       });
 
-      // ✅ snapshot (best-effort)
       if (simulationId) {
         await saveReportSnapshot({ supabase, simulationId, snapshot: premium });
       }
@@ -227,7 +221,6 @@ calcRoute.post("/calc", requireApiAuth, async (c) => {
       return c.json(premium);
     }
 
-    // Free também devolve simulationId (ajuda PDF/UX)
     const free = {
       ...buildFreeResult({ computed }),
       simulationId,
