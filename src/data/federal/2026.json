@@ -1,0 +1,145 @@
+{
+  "taxYear": 2026,
+
+  "standardDeduction": {
+    "single": 16150,
+    "mfs": 16150,
+    "mfj": 32300,
+    "hoh": 24250
+  },
+
+  "brackets": {
+    "single": [
+      { "upTo": 12400, "rate": 0.10 },
+      { "upTo": 50200, "rate": 0.12 },
+      { "upTo": 106150, "rate": 0.22 },
+      { "upTo": 202050, "rate": 0.24 },
+      { "upTo": 257350, "rate": 0.32 },
+      { "upTo": 640600, "rate": 0.35 },
+      { "upTo": null, "rate": 0.37 }
+    ],
+    "mfj": [
+      { "upTo": 24800, "rate": 0.10 },
+      { "upTo": 100400, "rate": 0.12 },
+      { "upTo": 212300, "rate": 0.22 },
+      { "upTo": 404100, "rate": 0.24 },
+      { "upTo": 514700, "rate": 0.32 },
+      { "upTo": 768600, "rate": 0.35 },
+      { "upTo": null, "rate": 0.37 }
+    ],
+    "hoh": [
+      { "upTo": 17700, "rate": 0.10 },
+      { "upTo": 67500, "rate": 0.12 },
+      { "upTo": 106150, "rate": 0.22 },
+      { "upTo": 202050, "rate": 0.24 },
+      { "upTo": 257300, "rate": 0.32 },
+      { "upTo": 640600, "rate": 0.35 },
+      { "upTo": null, "rate": 0.37 }
+    ],
+    "mfs": [
+      { "upTo": 12400, "rate": 0.10 },
+      { "upTo": 50200, "rate": 0.12 },
+      { "upTo": 106150, "rate": 0.22 },
+      { "upTo": 202050, "rate": 0.24 },
+      { "upTo": 257350, "rate": 0.32 },
+      { "upTo": 384300, "rate": 0.35 },
+      { "upTo": null, "rate": 0.37 }
+    ]
+  },
+
+  "qbi": {
+    "rate": 0.20,
+    "threshold": {
+      "single": 191950,
+      "mfj": 383900,
+      "hoh": 191950,
+      "mfs": 191950
+    }
+  },
+
+  "niit": {
+    "rate": 0.038,
+    "threshold": {
+      "single": 200000,
+      "mfj": 250000,
+      "hoh": 200000,
+      "mfs": 125000
+    }
+  },
+
+  "itemized": {
+    "saltCap": 10000
+  },
+
+  "ctc": {
+    "perQualifyingChild": 2000,
+    "perOtherDependent": 500,
+    "maxRefundablePerChild": 1700,
+    "phaseoutStart": {
+      "single": 200000,
+      "mfj": 400000,
+      "hoh": 200000,
+      "mfs": 200000
+    },
+    "phaseoutStep": 1000,
+    "phaseoutAmountPerStep": 50
+  },
+
+  "eitc": {
+    "investmentIncomeLimit": 11000,
+    "table": {
+      "single_0": {
+        "phaseInRate": 0.0765,
+        "maxCredit": 632,
+        "phaseOutStart": 8690,
+        "phaseOutRate": 0.0765
+      },
+      "single_1": {
+        "phaseInRate": 0.34,
+        "maxCredit": 4213,
+        "phaseOutStart": 20130,
+        "phaseOutRate": 0.1598
+      },
+      "single_2": {
+        "phaseInRate": 0.40,
+        "maxCredit": 6960,
+        "phaseOutStart": 20130,
+        "phaseOutRate": 0.2106
+      },
+      "single_3": {
+        "phaseInRate": 0.45,
+        "maxCredit": 7830,
+        "phaseOutStart": 20130,
+        "phaseOutRate": 0.2106
+      },
+
+      "mfj_0": {
+        "phaseInRate": 0.0765,
+        "maxCredit": 632,
+        "phaseOutStart": 16450,
+        "phaseOutRate": 0.0765
+      },
+      "mfj_1": {
+        "phaseInRate": 0.34,
+        "maxCredit": 4213,
+        "phaseOutStart": 28270,
+        "phaseOutRate": 0.1598
+      },
+      "mfj_2": {
+        "phaseInRate": 0.40,
+        "maxCredit": 6960,
+        "phaseOutStart": 28270,
+        "phaseOutRate": 0.2106
+      },
+      "mfj_3": {
+        "phaseInRate": 0.45,
+        "maxCredit": 7830,
+        "phaseOutStart": 28270,
+        "phaseOutRate": 0.2106
+      }
+    }
+  },
+
+  "source": "Tax Foundation – 2026 Tax Brackets",
+  "verifiedAt": "2026-12-17"
+}

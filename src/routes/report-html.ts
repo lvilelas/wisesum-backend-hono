@@ -22,7 +22,6 @@ function money(n: any) {
 }
 
 function money2(n: any) {
-  // para valores com centavos (fica mais "premium" no topo)
   const v = Number(n ?? 0);
   if (!Number.isFinite(v)) return "US$0.00";
   return (
@@ -150,7 +149,6 @@ function htmlSeTax(result: any) {
   const title = "Self-Employment Tax Report";
   const simId = esc(result?.simulationId ?? "");
 
-  // números base
   const netProfit = clampNumber(result?.netProfit);
   const w2Wages = clampNumber(result?.w2Wages);
   const netEarnings = clampNumber(result?.netEarnings);
@@ -168,14 +166,12 @@ function htmlSeTax(result: any) {
   const deductibleHalf = clampNumber(result?.deductibleHalf);
   const total = clampNumber(result?.total);
 
-  // insights premium (tipo o frontend)
   const monthlySetAside = total / 12;
   const quarterlyPayment = total / 4;
   const taxImpactPct = netProfit > 0 ? total / netProfit : 0;
 
   const dueDates = ["Apr 15", "Jun 15", "Sep 15", "Jan 15"];
 
-  // recommendations (geradas a partir dos dados)
   const recommendations: string[] = [];
 
   recommendations.push(
@@ -208,7 +204,7 @@ function htmlSeTax(result: any) {
     recommendations.push(
       `You’re above the Additional Medicare threshold (${money2(
         additionalMedicareThreshold
-      )}). If you expect income changes, revisit this estimate.`
+      )}). If you expect income changes, revisit this calculation.`
     );
   } else {
     recommendations.push(
@@ -217,6 +213,8 @@ function htmlSeTax(result: any) {
       )}). A large income jump could trigger additional Medicare tax.`
     );
   }
+
+  const taxYearLabel = esc(result?.taxYear ?? "—");
 
   return `<!doctype html>
 <html>
@@ -233,7 +231,6 @@ function htmlSeTax(result: any) {
 
     .badge { display:inline-block; padding: 4px 10px; border-radius: 999px; border:1px solid #e2e8f0; font-size: 12px; font-weight: 700; }
     .badge.premium { background:#ecfdf5; border-color:#bbf7d0; color:#065f46; }
-    .badge.free { background:#f8fafc; border-color:#e2e8f0; color:#334155; }
 
     h1 { font-size: 22px; margin: 0; }
     h2 { font-size: 14px; margin: 0 0 10px; }
@@ -273,19 +270,19 @@ function htmlSeTax(result: any) {
       <div class="stat">
         <div class="label">Net earnings from SE (92.35%)</div>
         <div class="big">${money2(netEarnings)}</div>
-        <div class="sub">Based on net profit: ${money2(netProfit)}</div>
+        <div class="sub">Based on IRS ${taxYearLabel} constants</div>
       </div>
       <div class="stat">
         <div class="label">Total (incl. additional Medicare)</div>
         <div class="big">${money2(total)}</div>
-        <div class="sub">Estimate</div>
+        <div class="sub">Confirmed IRS data</div>
       </div>
     </div>
 
     <div class="card">
       <h2>Inputs</h2>
-      <div class="row"><div class="k">Tax year</div><div class="v">${esc(result?.taxYear ?? "")}</div></div>
-      <div class="row"><div class="k">Filing status</div><div class="v">${esc(result?.filingStatus ?? "")}</div></div>
+      <div class="row"><div class="k">Tax year</div><div class="v">${taxYearLabel}</div></div>
+      <div class="row"><div class="k">Filing status</div><div class="v">${esc(result?.filingStatus ?? "—")}</div></div>
       <div class="row"><div class="k">Net profit (Schedule C)</div><div class="v">${money2(netProfit)}</div></div>
       <div class="row"><div class="k">W-2 wages</div><div class="v">${money2(w2Wages)}</div></div>
     </div>
@@ -349,7 +346,6 @@ reportHtmlRoute.get("/report-html", async (c) => {
 
   const payload = await verifyPdfToken(pdfToken, c.env.PDF_TOKEN_SECRET).catch(() => null);
 
-  // valida simulationId + reportType
   if (
     !payload ||
     String(payload.simulationId) !== String(simulationId) ||

@@ -1,13 +1,13 @@
 // scripts/import-taxfoundation.ts
 //
 // Importa o XLSX do Tax Foundation (layout multi-linha por estado) e
-// gera src/lib/tax/2025/<STATE>.json para FilingStatus=single.
+// gera src/lib/tax/2026/<STATE>.json para FilingStatus=single.
 //
 // Requer:
 //   npm i xlsx
 //
 // Coloque o arquivo em:
-//   scripts/data/taxfoundation-2025.xlsx
+//   scripts/data/taxfoundation-2026.xlsx
 //
 // Rode:
 //   npx ts-node scripts/import-taxfoundation.ts
@@ -289,9 +289,9 @@ function pickSheetWithMostRows(wb: XLSX.WorkBook) {
 }
 
 function main() {
-  const year = 2025;
+  const year = 2026;
 
-  const xlsxPath = path.resolve(process.cwd(), "scripts/data/taxfoundation-2025.xlsx");
+  const xlsxPath = path.resolve(process.cwd(), "scripts/data/taxfoundation-2026.xlsx");
   if (!fs.existsSync(xlsxPath)) throw new Error(`Missing XLSX: ${xlsxPath}`);
 
   const wb = XLSX.readFile(xlsxPath);
@@ -320,7 +320,7 @@ function main() {
 
   const data = aoa.slice(headerRowIdx + 1);
 
-  // Índices (layout comum do TF 2025)
+  // Índices (layout comum do TF 2026)
   // A: State
   // B: Single Rates
   // D: Single Brackets (lower bound / "over")
@@ -420,7 +420,7 @@ function main() {
       personalExemption: { single: s.persExSingle ?? 0 },
 
       notes:
-        "Imported from Tax Foundation XLSX (2025). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
+        "Imported from Tax Foundation XLSX (2026). Thresholds converted from lower-bounds to upTo using the next bracket threshold.",
       verified: true,
       confidence: "verified",
       source: ["https://taxfoundation.org/data/all/state/state-income-tax-rates/"],

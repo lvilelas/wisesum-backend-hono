@@ -1,8 +1,12 @@
 // backend/src/services/simulationService.ts
 
 import { FreeSummaryResult, PremiumDetailedResult } from "../lib/types";
-import { calcStateTax } from "../lib/tax/stateTaxEngine";
+import { calcStateTax, calcStateTaxFromTaxableBase } from "../lib/tax/stateTaxEngine";
+import { loadStateBaseRules, applyStateConformity, applyStateDeductions } from "../lib/tax/stateBaseCalc";
 import { getFederalStandardDeduction } from "../lib/tax/federalAssumptions";
+import type { FilingStatus } from "../lib/tax/stateTaxEngine";
+// ✅ 2026 federal confirmed JSON (single source for 2026)
+import federal2026 from "../data/federal/2026.json" assert { type: "json" };
 
 export type StateCode = string; // "CA", "TX", "NY"...
 
@@ -11,7 +15,7 @@ export type CalcInput = {
   income1099: number;
   state: StateCode;
   expenses: number;
-  year?: number; // optional (default 2025)
+  year?: number; // optional (default 2026 at route level)
 };
 
 type W2 = {
@@ -50,16 +54,65 @@ export type CalcComputed = {
   };
 };
 
-// Brackets placeholder (mantidos como 2025 por MVP)
-const FEDERAL_BRACKETS_2025_SINGLE: Array<{ upTo: number | null; rate: number }> = [
-  { upTo: 11600, rate: 0.1 },
-  { upTo: 47150, rate: 0.12 },
-  { upTo: 100525, rate: 0.22 },
-  { upTo: 191950, rate: 0.24 },
-  { upTo: 243725, rate: 0.32 },
-  { upTo: 609350, rate: 0.35 },
-  { upTo: null, rate: 0.37 },
-];
+function computeTaxableStateIncome(args: {
+  year: number;
+  state: string;
+  filingStatus: FilingStatus;
+  federalAGI: number;
+  input?: Record<string, any>;
+  useItemized?: boolean;
+}) {
+  const {
+    year,
+    state,
+    filingStatus,
+    federalAGI,
+    input = {},
+    useItemized = false,
+  } = args;
+
+  const baseRules = loadStateBaseRules(year, state);
+
+  const conformity = applyStateConformity(federalAGI, baseRules, {
+    year,
+    state,
+    filingStatus,
+    input,
+  });
+
+  const deductions = applyStateDeductions(conformity.value, baseRules, {
+    year,
+    state,
+    filingStatus,
+    input,
+    federalAGI,
+    useItemized,
+  });
+
+  return {
+    stateAGI: conformity.value,
+    taxableStateIncome: deductions.value,
+    warnings: [...conformity.warnings, ...deductions.warnings],
+    missingInputs: Array.from(
+      new Set([...conformity.missingInputs, ...deductions.missingInputs])
+    ),
+  };
+}
+// -------------------------
+// FEDERAL PLACEHOLDERS (MVP)
+// -------------------------
+// (mantidos como você já tinha; o importante aqui é a standard deduction 2026 vir do JSON confirmado)
+
+const FEDERAL_BRACKETS_2026_SINGLE: Array<{ upTo: number | null; rate: number }> =
+  [
+    { upTo: 11600, rate: 0.1 },
+    { upTo: 47150, rate: 0.12 },
+    { upTo: 100525, rate: 0.22 },
+    { upTo: 191950, rate: 0.24 },
+    { upTo: 243725, rate: 0.32 },
+    { upTo: 609350, rate: 0.35 },
+    { upTo: null, rate: 0.37 },
+  ];
 
 function calcProgressiveTax(
   taxable: number,
@@ -83,7 +136,10 @@ function calcProgressiveTax(
 }
 
 function calcFederalTaxFromTaxableIncome_single_placeholder(taxableIncome: number) {
-  return calcProgressiveTax(Math.max(0, taxableIncome), FEDERAL_BRACKETS_2025_SINGLE);
+  return calcProgressiveTax(
+    Math.max(0, taxableIncome),
+    FEDERAL_BRACKETS_2026_SINGLE
+  );
 }
 
 function calcFederalTaxW2_single_placeholder(w2Salary: number, standardDeduction: number) {
@@ -92,7 +148,6 @@ function calcFederalTaxW2_single_placeholder(w2Salary: number, standardDeduction
 }
 
 function calcFicaTax_placeholder(w2Salary: number) {
-  // placeholder simplificado
   const ssRate = 0.062;
   const ssWageBase = 168600; // placeholder
   const medicare = 0.0145;
@@ -106,14 +161,12 @@ function calcFicaTax_placeholder(w2Salary: number) {
 }
 
 function calcSeTax_placeholder(netProfit: number) {
-  // placeholder
   const taxable = Math.max(0, netProfit) * 0.9235;
 
   const ssRate = 0.124;
   const ssWageBase = 168600; // placeholder
   const medicare = 0.029;
 
-  // Additional Medicare (single): 0.9% acima de 200k (aproximação)
   const addMed = 0.009;
   const addThreshold = 200000;
 
@@ -122,6 +175,37 @@ function calcSeTax_placeholder(netProfit: number) {
   const additional = Math.max(0, taxable - addThreshold) * addMed;
 
   return ss + med + additional;
+}
+
+/**
+ * ✅ Standard Deduction loader:
+ * - For 2026: MUST use confirmed JSON (federal/2026.json)
+ * - For other years: use assumptions helper (official map / estimate)
+ */
+function getStandardDeductionWithMeta(year: number) {
+  if (year === 2026) {
+    const value = Number((federal2026 as any)?.standardDeduction?.single ?? 0);
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new Error("Missing confirmed standard deduction for 2026 in federal/2026.json");
+    }
+    return {
+      value,
+      meta: {
+        method: "official" as const,
+        baseYear: 2026,
+        inflationRate: 0,
+        yearsForward: 0,
+        note: "Confirmed value from data/federal/2026.json",
+      },
+    };
+  }
+
+  // fallback to assumptions helper (official/estimated)
+  const stdDed = getFederalStandardDeduction(year, "single");
+  return {
+    value: stdDed.value,
+    meta: stdDed.meta,
+  };
 }
 
 /**
@@ -140,12 +224,8 @@ async function compareResultsNew(inputs: CalcInput, year: number, standardDeduct
   const w2FederalTax = calcFederalTaxW2_single_placeholder(w2Salary, standardDeduction);
   const w2Fica = calcFicaTax_placeholder(w2Salary);
 
-  const w2State = calcStateTax({
-    year,
-    filingStatus: "single",
-    state,
-    taxableIncome: w2Salary, // MVP simplificado
-  }).tax;
+  const w2Taxable = computeTaxableStateIncome({ year, state, filingStatus: "single", federalAGI: w2Salary });
+  const w2State = calcStateTaxFromTaxableBase({ year, filingStatus: "single", state, taxableBase: w2Taxable.taxableStateIncome }).tax;
 
   const w2Total = w2FederalTax + w2State + w2Fica;
   const w2Net = w2Salary - w2Total;
@@ -158,17 +238,12 @@ async function compareResultsNew(inputs: CalcInput, year: number, standardDeduct
   const seTax = calcSeTax_placeholder(netProfit);
   const halfSeDeduction = seTax / 2;
 
-  // Federal: AGI e taxable corretamente
   const agi = Math.max(0, netProfit - halfSeDeduction);
   const taxableFederal = Math.max(0, agi - standardDeduction);
   const seFederalTax = calcFederalTaxFromTaxableIncome_single_placeholder(taxableFederal);
 
-  const seStateTax = calcStateTax({
-    year,
-    filingStatus: "single",
-    state,
-    taxableIncome: netProfit, // MVP simplificado
-  }).tax;
+  const seTaxable = computeTaxableStateIncome({ year, state, filingStatus: "single", federalAGI: agi, input: { /* optional state inputs */ } });
+  const seStateTax = calcStateTaxFromTaxableBase({ year, filingStatus: "single", state, taxableBase: seTaxable.taxableStateIncome }).tax;
 
   const seTotal = seFederalTax + seStateTax + seTax;
   const seNet = income1099 - expenses - seTotal;
@@ -186,7 +261,7 @@ async function compareResultsNew(inputs: CalcInput, year: number, standardDeduct
     stateTax: seStateTax,
     seTax,
     netIncome: seNet,
-    effectiveTaxRate: netProfit > 0 ? seTotal / netProfit : 0, // FIX: por netProfit
+    effectiveTaxRate: netProfit > 0 ? seTotal / netProfit : 0,
   };
 
   const annualDifference = se.netIncome - w2.netIncome;
@@ -209,9 +284,8 @@ async function findBreakEven(params: {
 }): Promise<number> {
   const { year, w2Salary, state, expenses, standardDeduction } = params;
 
-  // alvo é o NET do W2 calculado com o bruto informado
   const baseline = await compareResultsNew(
-    { w2Salary, income1099: 0, state, expenses },
+    { w2Salary, income1099: 0, state, expenses, year },
     year,
     standardDeduction
   );
@@ -220,10 +294,9 @@ async function findBreakEven(params: {
   let low = 0;
   let high = Math.max(1, w2Salary * 5);
 
-  // garante que high é suficiente
   for (let i = 0; i < 12; i++) {
     const test = await compareResultsNew(
-      { w2Salary, income1099: high, state, expenses },
+      { w2Salary, income1099: high, state, expenses, year },
       year,
       standardDeduction
     );
@@ -236,7 +309,7 @@ async function findBreakEven(params: {
     mid = (low + high) / 2;
 
     const test = await compareResultsNew(
-      { w2Salary, income1099: mid, state, expenses },
+      { w2Salary, income1099: mid, state, expenses, year },
       year,
       standardDeduction
     );
@@ -249,10 +322,11 @@ async function findBreakEven(params: {
 }
 
 export async function computeSimulation(input: CalcInput): Promise<CalcComputed> {
-  const year = Number(input.year ?? 2025);
+  const year = Number(input.year ?? 2026);
+  if (!Number.isFinite(year)) throw new Error("Invalid tax year");
 
-  // standard deduction via lib (official or estimated)
-  const stdDed = getFederalStandardDeduction(year, "single");
+  // ✅ 2026 -> confirmed JSON; other years -> assumptions helper
+  const stdDed = getStandardDeductionWithMeta(year);
   const standardDeduction = stdDed.value;
 
   const results = await compareResultsNew(input, year, standardDeduction);
