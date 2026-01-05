@@ -659,7 +659,7 @@ estimatedQuarterlyRoute.post(
         return c.json({ message: "Premium required." }, 403);
       }
 
-      // Free daily limit — 1 por dia
+      // Free daily limit — 3 por dia
       if (!isPremium) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -678,7 +678,7 @@ estimatedQuarterlyRoute.post(
           return c.json({ message: "Failed to check daily limit" }, 500);
         }
 
-        if ((count ?? 0) >= 1) {
+        if ((count ?? 0) >= 3) {
           return c.json(
             { message: "Daily limit reached. Upgrade to simulate more." },
             429

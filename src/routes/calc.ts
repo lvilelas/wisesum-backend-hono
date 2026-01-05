@@ -179,7 +179,7 @@ calcRoute.post("/calc", requireApiAuth, async (c) => {
         return c.json({ message: "Failed to check daily limit" }, 500);
       }
 
-      if ((count ?? 0) >= 1) {
+      if ((count ?? 0) >= 3) {
         return c.json(
           { message: "Daily limit reached. Upgrade to simulate more." },
           429
