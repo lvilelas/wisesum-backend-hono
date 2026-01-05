@@ -98,3 +98,28 @@ alter table public.se_tax_simulations
 
 create index if not exists se_tax_simulations_user_total_idx
   on public.se_tax_simulations (clerk_user_id, total);  
+
+
+  create table if not exists public.quarterly_simulations (
+  id uuid primary key default gen_random_uuid(),
+  clerk_user_id text not null,
+  created_at timestamptz not null default now(),
+
+  -- opcional: para debug / analytics
+  tax_year int not null default 2026,
+  state text,
+  filing_status text,
+
+  -- inputs (guarda só o básico do free; ou tudo se quiser)
+  input jsonb not null,
+
+  -- resultado resumido pra você consultar rápido sem recalcular
+  result jsonb
+);
+
+-- índices para a query do daily limit
+create index if not exists quarterly_simulations_user_created_at_idx
+  on public.quarterly_simulations (clerk_user_id, created_at desc);
+
+create index if not exists quarterly_simulations_created_at_idx
+  on public.quarterly_simulations (created_at desc);
