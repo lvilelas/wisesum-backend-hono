@@ -666,12 +666,12 @@ estimatedQuarterlyRoute.post(
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        const { count, error: countErr } = await supabase
-          .from("simulations")
-          .select("*", { count: "exact", head: true })
-          .eq("clerk_user_id", userId)
-          .gte("created_at", today.toISOString())
-          .lt("created_at", tomorrow.toISOString());
+      const { count, error: countErr } = await supabase
+        .from("quarterly_simulations")
+        .select("*", { count: "exact", head: true })
+        .eq("clerk_user_id", userId)
+        .gte("created_at", today.toISOString())
+        .lt("created_at", tomorrow.toISOString());
 
         if (countErr) {
           console.error("Count simulations error", countErr);
@@ -927,7 +927,35 @@ estimatedQuarterlyRoute.post(
       const pieValues = isPremium
         ? [federalIncomeTaxAfterCredits, niitTax, stateIncomeTax, seTax, netTakeHome]
         : [federalTotal, stateIncomeTax, seTax, netTakeHome];
+      // ✅ INSERT AQUI (antes do return)
+      const { error: insertErr } = await supabase
+        .from("quarterly_simulations")
+        .insert({
+          clerk_user_id: userId,
+          tax_year: TAX_YEAR,
+          state,
+          filing_status: filingStatus,
+          input: body,
+          result: {
+            tier: isPremium ? "premium" : "free",
+            annual: {
+              totalTax,
+              remainingAfterWithholding,
+              seTax,
+              federalTotal,
+              federalIncomeTaxAfterCredits,
+              niitTax,
+              stateIncomeTax,
+            },
+            quarterly,
+            pie: { labels: pieLabels, values: pieValues },
+          },
+        });
 
+      if (insertErr) {
+        // não quebra a experiência do usuário por falha de logging
+        console.error("Insert quarterly_simulations error", insertErr);
+}
       return c.json({
         tier: isPremium ? "premium" : "free",
         taxYear: TAX_YEAR,
