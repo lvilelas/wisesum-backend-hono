@@ -659,26 +659,26 @@ estimatedQuarterlyRoute.post(
         return c.json({ message: "Premium required." }, 403);
       }
 
-      // Free daily limit — 1 por dia
+      // Free daily limit — 3 por dia
       if (!isPremium) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        const { count, error: countErr } = await supabase
-          .from("simulations")
-          .select("*", { count: "exact", head: true })
-          .eq("clerk_user_id", userId)
-          .gte("created_at", today.toISOString())
-          .lt("created_at", tomorrow.toISOString());
+      const { count, error: countErr } = await supabase
+        .from("quarterly_simulations")
+        .select("*", { count: "exact", head: true })
+        .eq("clerk_user_id", userId)
+        .gte("created_at", today.toISOString())
+        .lt("created_at", tomorrow.toISOString());
 
         if (countErr) {
           console.error("Count simulations error", countErr);
           return c.json({ message: "Failed to check daily limit" }, 500);
         }
 
-        if ((count ?? 0) >= 1) {
+        if ((count ?? 0) >= 3) {
           return c.json(
             { message: "Daily limit reached. Upgrade to simulate more." },
             429
@@ -927,7 +927,35 @@ estimatedQuarterlyRoute.post(
       const pieValues = isPremium
         ? [federalIncomeTaxAfterCredits, niitTax, stateIncomeTax, seTax, netTakeHome]
         : [federalTotal, stateIncomeTax, seTax, netTakeHome];
+      // ✅ INSERT AQUI (antes do return)
+      const { error: insertErr } = await supabase
+        .from("quarterly_simulations")
+        .insert({
+          clerk_user_id: userId,
+          tax_year: TAX_YEAR,
+          state,
+          filing_status: filingStatus,
+          input: body,
+          result: {
+            tier: isPremium ? "premium" : "free",
+            annual: {
+              totalTax,
+              remainingAfterWithholding,
+              seTax,
+              federalTotal,
+              federalIncomeTaxAfterCredits,
+              niitTax,
+              stateIncomeTax,
+            },
+            quarterly,
+            pie: { labels: pieLabels, values: pieValues },
+          },
+        });
 
+      if (insertErr) {
+        // não quebra a experiência do usuário por falha de logging
+        console.error("Insert quarterly_simulations error", insertErr);
+}
       return c.json({
         tier: isPremium ? "premium" : "free",
         taxYear: TAX_YEAR,

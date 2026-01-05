@@ -32,33 +32,42 @@ jobs:
           GH_TOKEN: ${{ secrets.PR_BOT_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
-          set -euxo pipefail
+          set -euo pipefail
 
-          BASE_MM=$(node -p "(() => { const v=require('./package.json').version||'0.0.0'; const [M,m]=v.split('.'); return `${M}.${m}`; })()")
+          # Base major.minor from package.json (avoid backticks/template literals)
+          BASE_MM="$(node -p "(() => { const v=require('./package.json').version||'0.0.0'; const [M,m]=String(v).split('.'); return String(M)+'.'+String(m); })()")"
           echo "Base major.minor from package.json: $BASE_MM"
 
-          REFS=$(gh api -H "Accept: application/vnd.github+json" \
+          # Fetch existing release branch refs
+          REFS="$(gh api -H "Accept: application/vnd.github+json" \
             "repos/$REPO/git/matching-refs/heads/release/v" --paginate \
-            | jq -r '.[].ref' || true)
+            | jq -r '.[].ref' || true)"
 
           if [ -z "${REFS:-}" ]; then
             LAST="$BASE_MM.0"
           else
-            LAST=$(echo "$REFS" \
+            LAST="$(echo "$REFS" \
               | sed -n 's#^refs/heads/release/v##p' \
               | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
               | sort -V \
-              | tail -n 1)
+              | tail -n 1 || true)"
+
             if [ -z "${LAST:-}" ]; then
               LAST="$BASE_MM.0"
             fi
           fi
 
-          NEXT=$(node -p "(() => { const [M,m,p]=('$LAST').split('.').map(Number); return `${M}.${m}.${p+1}`; })()")
+          NEXT="$(node -p "(() => { const parts=String('$LAST').split('.').map(Number); const M=parts[0]||0; const m=parts[1]||0; const p=parts[2]||0; return String(M)+'.'+String(m)+'.'+String(p+1); })()")"
 
-          echo "last=$LAST" >> $GITHUB_OUTPUT
-          echo "version=$NEXT" >> $GITHUB_OUTPUT
-          echo "branch=release/v$NEXT" >> $GITHUB_OUTPUT
+          # Safety checks (fail fast if something is empty)
+          if [ -z "${NEXT:-}" ] || [ "${NEXT:-}" = "undefined" ]; then
+            echo "::error::Failed to compute NEXT version. LAST='$LAST' BASE_MM='$BASE_MM'"
+            exit 1
+          fi
+
+          echo "last=$LAST" >> "$GITHUB_OUTPUT"
+          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "branch=release/v$NEXT" >> "$GITHUB_OUTPUT"
 
           echo "Last release: $LAST"
           echo "Next release: $NEXT"
@@ -70,7 +79,12 @@ jobs:
           SHA: ${{ github.event.workflow_run.head_sha }}
           REPO: ${{ github.repository }}
         run: |
-          set -euxo pipefail
+          set -euo pipefail
+
+          if [ -z "${BRANCH:-}" ] || [ "${BRANCH:-}" = "release/vundefined" ]; then
+            echo "::error::Invalid branch name computed: '${BRANCH:-}'"
+            exit 1
+          fi
 
           if gh api -X GET "repos/$REPO/branches/$BRANCH" >/dev/null 2>&1; then
             echo "::error::Branch already exists unexpectedly: $BRANCH"
