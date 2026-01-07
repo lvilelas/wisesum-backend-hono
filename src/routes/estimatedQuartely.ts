@@ -5,9 +5,8 @@ import { requireApiAuth } from "../lib/requireApiAuth";
 import { getSupabase } from "../lib/supabaseEdge";
 
 // ✅ ÚNICA fonte de dados (mesmo pro Free e Premium)
-// Preferir JSON imports com assert em ESM/Workers
 import federalConstants from "../data/federal_constants.json" assert { type: "json" };
-import statesData from "../data/compiled_2026_all_states.json" assert { type: "json" }; // legacy brackets source
+import statesData from "../data/compiled_2026_all_states.json" assert { type: "json" };
 import { loadStateBaseRules, applyStateConformity, applyStateDeductions } from "../lib/tax/stateBaseCalc";
 import { calcStateTaxFromTaxableBase } from "../lib/tax/stateTaxEngine";
 import federal2026 from "../data/federal/2026.json" assert { type: "json" };
@@ -40,7 +39,6 @@ function round0(n: number) {
 
 // ✅ pega premium constants do MESMO federal2026.json
 function premium() {
-  // 2026.json stores premium constants at the top-level (qbi, niit, ctc, eitc, itemized, ca, etc.)
   return (federal2026 as any) ?? {};
 }
 
@@ -170,7 +168,6 @@ function getStandardDeduction(filingStatus: FilingStatus) {
   return Number((federal2026 as any).standardDeduction?.[filingStatus] ?? 0);
 }
 
-
 function calcStateIncomeTax(args: {
   year: number;
   state: string;
@@ -181,7 +178,6 @@ function calcStateIncomeTax(args: {
 }) {
   const { year, state, filingStatus, federalAGI, input, useItemized = false } = args;
 
-  // If state has no income tax, short-circuit quickly using the brackets table
   const row = (statesData as any)[state];
   if (row && row.hasIncomeTax === false) return 0;
 
@@ -210,7 +206,6 @@ function calcStateIncomeTax(args: {
   }).tax;
 }
 
-
 /** ---------- Premium: Itemized (SALT cap) ---------- */
 function calcItemizedDeduction(p: {
   saltPaid: number;
@@ -232,11 +227,9 @@ function calcItemizedDeduction(p: {
 /** ---------- Premium: QBI ---------- */
 function calcQbiDeduction(p: {
   filingStatus: FilingStatus;
-  qbiBase: number; // qualified business income (simplified proxy)
+  qbiBase: number;
   taxableBeforeQbi: number;
   netCapitalGains: number;
-
-  // QBI wage/UBIA tests + SSTB
   businessType: "nonSstb" | "sstb";
   w2Wages: number;
   ubia: number;
@@ -245,25 +238,16 @@ function calcQbiDeduction(p: {
   if (!q) return 0;
 
   const rate = Number(q.rate ?? 0.2);
-
-  // Thresholds + phaseout range (must come from JSON; fallbacks are standard amounts)
   const threshold = Number(q.threshold?.[p.filingStatus] ?? 0);
-
-  // IRS phaseout range: MFJ 100k; others 50k (MFS is 50k in practice)
   const phaseoutRange =
     Number(q.phaseoutRange?.[p.filingStatus] ?? 0) ||
     (p.filingStatus === "mfj" ? 100000 : 50000);
 
   const baseQbi = clamp0(p.qbiBase);
-
-  // 20% of taxable income (minus net capital gains)
   const taxableLimitBase = clamp0(p.taxableBeforeQbi - clamp0(p.netCapitalGains));
   const taxableLimit = round2(taxableLimitBase * rate);
-
-  // Tentative (pre wage/UBIA limit)
   const tentative = round2(baseQbi * rate);
 
-  // If below threshold, no wage/UBIA limit and no SSTB disallowance
   if (p.taxableBeforeQbi <= threshold || phaseoutRange <= 0) {
     return round2(Math.min(tentative, taxableLimit));
   }
@@ -273,18 +257,14 @@ function calcQbiDeduction(p: {
   const excess = clamp0(p.taxableBeforeQbi - threshold);
   const ratio = withinPhaseout ? excess / phaseoutRange : 1;
 
-  // Wage/UBIA limit (full)
   const w2 = clamp0(p.w2Wages);
   const ubia = clamp0(p.ubia);
-  const wageLimit = round2(
-    Math.max(0.5 * w2, 0.25 * w2 + 0.025 * ubia)
-  );
+  const wageLimit = round2(Math.max(0.5 * w2, 0.25 * w2 + 0.025 * ubia));
 
-  // SSTB: phase-out the entire deduction (and reduce wages/UBIA) over the same range
   if (p.businessType === "sstb") {
     if (!withinPhaseout) return 0;
 
-    const factor = 1 - ratio; // remaining allowed portion
+    const factor = 1 - ratio;
     const adjQbi = round2(baseQbi * factor);
     const adjW2 = round2(w2 * factor);
     const adjUbia = round2(ubia * factor);
@@ -297,26 +277,20 @@ function calcQbiDeduction(p: {
     return round2(Math.min(adjTentative, adjWageLimit, taxableLimit));
   }
 
-  // Non-SSTB: wage/UBIA limitation phases in over the range
-  // If wage limit >= tentative, no reduction.
   const fullLimited = round2(Math.min(tentative, wageLimit));
 
   let phased = fullLimited;
   if (wageLimit < tentative && withinPhaseout) {
-    // Reduction = ratio * (tentative - wageLimit)
     phased = round2(tentative - ratio * (tentative - wageLimit));
   } else if (wageLimit < tentative && !withinPhaseout) {
-    phased = fullLimited; // fully limited above upper bound
+    phased = fullLimited;
   }
 
   return round2(Math.min(phased, taxableLimit));
 }
+
 /** ---------- Premium: NIIT ---------- */
-function calcNiit(p: {
-  filingStatus: FilingStatus;
-  magi: number;
-  netInvestmentIncome: number;
-}) {
+function calcNiit(p: { filingStatus: FilingStatus; magi: number; netInvestmentIncome: number }) {
   const n = premium()?.niit;
   if (!n) return 0;
 
@@ -356,8 +330,7 @@ function calcChildCredits(p: {
   const maxRefundablePerChild = Number(c.maxRefundablePerChild ?? 0);
 
   const baseCredit =
-    clamp0(p.qualifyingChildren) * perChild +
-    clamp0(p.otherDependents) * perOtherDep;
+    clamp0(p.qualifyingChildren) * perChild + clamp0(p.otherDependents) * perOtherDep;
 
   const over = clamp0(p.magi - phaseStart);
   const steps = phaseStep > 0 ? Math.ceil(over / phaseStep) : 0;
@@ -399,7 +372,6 @@ function calcEitc(p: {
 
   const kids = Math.min(3, Math.max(0, Math.floor(p.children)));
   const key = `${p.filingStatus}_${kids}`;
-
   const row = e.table?.[key];
   if (!row) return { credit: 0, note: "EITC table row missing." };
 
@@ -411,7 +383,6 @@ function calcEitc(p: {
   const baseIncome = Math.min(p.earnedIncome, p.agi);
 
   const creditPhaseIn = Math.min(maxCredit, baseIncome * phaseInRate);
-
   const over = clamp0(baseIncome - phaseOutStart);
   const phaseOut = over * phaseOutRate;
 
@@ -433,7 +404,6 @@ function calcCaCredits(p: {
   const ca = premium()?.ca;
   if (!ca) return { caCredits: 0, notes: ["CA constants missing."] };
 
-  // CalEITC table per kids
   let caleitc = 0;
   const kids = Math.min(3, Math.max(0, Math.floor(p.qualifyingChildren)));
   const row = ca.calEitcTable?.[String(kids)];
@@ -441,12 +411,10 @@ function calcCaCredits(p: {
     const maxCredit = Number(row.maxCredit ?? 0);
     const phaseOutStart = Number(row.phaseOutStart ?? 0);
     const phaseOutRate = Number(row.phaseOutRate ?? 0);
-
     const over = clamp0(p.earnedIncome - phaseOutStart);
     caleitc = clamp0(maxCredit - over * phaseOutRate);
   }
 
-  // YCTC
   let yctc = 0;
   if (p.hasYoungChild) {
     const y = ca.yctc;
@@ -501,7 +469,6 @@ const inputSchema = z.object({
   qbiW2WagesAnnual: z.number().min(0).optional().default(0),
   qbiQualifiedPropertyUbiaAnnual: z.number().min(0).optional().default(0),
 
-
   hsaContributionAnnual: z.number().min(0).optional().default(0),
   iraContributionAnnual: z.number().min(0).optional().default(0),
   solo401kEmployeeAnnual: z.number().min(0).optional().default(0),
@@ -518,6 +485,14 @@ const inputSchema = z.object({
   otherDependents: z.number().min(0).optional().default(0),
 
   caHasYoungChild: z.boolean().optional().default(false),
+
+  // ✅ NEW (Premium): payments made / penalty risk inputs
+  paymentsMadeYtdAnnual: z.number().min(0).optional().default(0),
+  usePerQuarterPayments: z.boolean().optional().default(false),
+  paymentsMadeQ1: z.number().min(0).optional().default(0),
+  paymentsMadeQ2: z.number().min(0).optional().default(0),
+  paymentsMadeQ3: z.number().min(0).optional().default(0),
+  paymentsMadeQ4: z.number().min(0).optional().default(0),
 });
 
 function hasAnyPremiumFields(body: any) {
@@ -548,6 +523,14 @@ function hasAnyPremiumFields(body: any) {
     "priorYearTotalTax",
     "priorYearAgi",
     "strategy",
+
+    // ✅ NEW (Premium): penalty risk
+    "paymentsMadeYtdAnnual",
+    "usePerQuarterPayments",
+    "paymentsMadeQ1",
+    "paymentsMadeQ2",
+    "paymentsMadeQ3",
+    "paymentsMadeQ4",
   ];
 
   return premiumKeys.some((k) => k in body);
@@ -557,14 +540,6 @@ function hasAnyPremiumFields(body: any) {
  Safe Harbor helper
 ================================ */
 
-/**
- * ✅ Safe Harbor multiplier:
- * - 100% prior-year total tax normally
- * - 110% if prior-year AGI > 150k (most statuses)
- * - 110% if filingStatus === "mfs" and AGI > 75k
- *
- * (Still simplified but correct thresholds.)
- */
 function safeHarborMultiplier(filingStatus: FilingStatus, priorYearAgi?: number) {
   const agi = Number(priorYearAgi ?? 0);
   if (!Number.isFinite(agi) || agi <= 0) return 1.0;
@@ -574,97 +549,213 @@ function safeHarborMultiplier(filingStatus: FilingStatus, priorYearAgi?: number)
 }
 
 /* ===============================
+ Penalty risk (lite) helpers
+================================ */
+
+// Fixed due dates (labels). Real IRS dates can shift for weekend/holiday.
+const DUE_DATES = (year: number) => [
+  { label: "Q1" as const, due: new Date(Date.UTC(year, 3, 15)) }, // Apr 15
+  { label: "Q2" as const, due: new Date(Date.UTC(year, 5, 15)) }, // Jun 15
+  { label: "Q3" as const, due: new Date(Date.UTC(year, 8, 15)) }, // Sep 15
+  { label: "Q4" as const, due: new Date(Date.UTC(year + 1, 0, 15)) }, // Jan 15 next year
+];
+
+function quartersPassedByNow(taxYear: number, now = new Date()) {
+  const t = now.getTime();
+  const schedule = DUE_DATES(taxYear);
+  let passed = 0;
+  for (const q of schedule) {
+    if (t > q.due.getTime()) passed++;
+  }
+  return { passed, left: 4 - passed };
+}
+
+function buildPenaltyRiskLite(p: {
+  taxYear: number;
+  safeHarborRequiredAnnual: number;
+  withholdingAnnual: number;
+
+  // premium user inputs
+  paymentsMadeYtdAnnual: number;
+  usePerQuarterPayments: boolean;
+  paymentsMadeQ1: number;
+  paymentsMadeQ2: number;
+  paymentsMadeQ3: number;
+  paymentsMadeQ4: number;
+}) {
+  const nowInfo = quartersPassedByNow(p.taxYear, new Date());
+  const passed = Math.min(4, Math.max(0, nowInfo.passed));
+
+  // required cumulative by each due date
+  const requiredCum = {
+    Q1: round2(p.safeHarborRequiredAnnual * 0.25),
+    Q2: round2(p.safeHarborRequiredAnnual * 0.50),
+    Q3: round2(p.safeHarborRequiredAnnual * 0.75),
+    Q4: round2(p.safeHarborRequiredAnnual * 1.00),
+  };
+
+  // withholding treated as evenly paid through the year (simplified)
+  const withholdingPerQuarter = round2(clamp0(p.withholdingAnnual) / 4);
+
+  // paid estimated payments per quarter
+  let paidQ = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
+
+  if (p.usePerQuarterPayments) {
+    paidQ = {
+      Q1: clamp0(p.paymentsMadeQ1),
+      Q2: clamp0(p.paymentsMadeQ2),
+      Q3: clamp0(p.paymentsMadeQ3),
+      Q4: clamp0(p.paymentsMadeQ4),
+    };
+  } else {
+    // If only YTD is provided, we allocate evenly across quarters passed so far (timing simplified).
+    const ytd = clamp0(p.paymentsMadeYtdAnnual);
+    const denom = passed > 0 ? passed : 1;
+    const per = passed > 0 ? round2(ytd / denom) : 0;
+    paidQ = {
+      Q1: passed >= 1 ? per : 0,
+      Q2: passed >= 2 ? per : 0,
+      Q3: passed >= 3 ? per : 0,
+      Q4: passed >= 4 ? per : 0,
+    };
+  }
+
+  // cumulative paid by each due date (withholding share + estimated payments)
+  const cumPaidByQuarter = (label: "Q1" | "Q2" | "Q3" | "Q4") => {
+    const quarters: Array<"Q1" | "Q2" | "Q3" | "Q4"> = ["Q1", "Q2", "Q3", "Q4"];
+    let sum = 0;
+    for (const q of quarters) {
+      sum += withholdingPerQuarter; // withholding always counts evenly
+      sum += paidQ[q] ?? 0;
+      if (q === label) break;
+    }
+    return round2(sum);
+  };
+
+  const underpaymentByQuarter = (["Q1", "Q2", "Q3", "Q4"] as const).map((q) => {
+    const requiredByDueDate = requiredCum[q];
+    const paidByDueDate = cumPaidByQuarter(q);
+    const underpayment = round2(clamp0(requiredByDueDate - paidByDueDate));
+    return { label: q, requiredByDueDate, paidByDueDate, underpayment };
+  });
+
+  const requiredToDate =
+    passed <= 0 ? 0 : (underpaymentByQuarter[passed - 1]?.requiredByDueDate ?? 0);
+
+  const paidToDate =
+    passed <= 0 ? round2(withholdingPerQuarter * 0) : (underpaymentByQuarter[passed - 1]?.paidByDueDate ?? 0);
+
+  const protectedBySafeHarbor =
+    passed <= 0 ? true : paidToDate + 0.01 >= requiredToDate; // small epsilon
+
+  return {
+    safeHarborRequiredAnnual: round2(p.safeHarborRequiredAnnual),
+    safeHarborRequiredToDate: round2(requiredToDate),
+    paidToDate: round2(paidToDate),
+    protectedBySafeHarbor,
+    quartersPassed: passed,
+    quartersLeft: 4 - passed,
+    underpaymentByQuarter,
+    notes: [
+      "Penalty risk is simplified: withholding is treated as evenly paid across the year.",
+      "If you enter only YTD payments, timing is approximated by spreading payments across quarters already due.",
+      "Due dates can shift for weekends/holidays.",
+    ],
+  };
+}
+
+/* ===============================
  Route
 ================================ */
 
-estimatedQuarterlyRoute.post(
-  "/calc/estimated-quarterly",
-  requireApiAuth,
-  async (c) => {
-    console.log("== /api/calc/estimated-quarterly ==");
+estimatedQuarterlyRoute.post("/calc/estimated-quarterly", requireApiAuth, async (c) => {
+  console.log("== /api/calc/estimated-quarterly ==");
 
-    try {
-      const raw = await c.req.text();
-      const body = raw ? JSON.parse(raw) : null;
+  try {
+    const raw = await c.req.text();
+    const body = raw ? JSON.parse(raw) : null;
 
-      const parsed = inputSchema.safeParse(body);
-      if (!parsed.success) {
-        return c.json(
-          { message: "Invalid input", errors: parsed.error.errors },
-          400
-        );
-      }
+    const parsed = inputSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ message: "Invalid input", errors: parsed.error.errors }, 400);
+    }
 
-      const {
-        filingStatus,
-        state,
-        netProfitAnnual,
-        otherIncomeAnnual,
-        withholdingAnnual,
+    const {
+      filingStatus,
+      state,
+      netProfitAnnual,
+      otherIncomeAnnual,
+      withholdingAnnual,
 
-        priorYearTotalTax,
-        priorYearAgi,
+      priorYearTotalTax,
+      priorYearAgi,
 
-        w2WagesAnnual,
-        interestIncomeAnnual,
-        dividendIncomeAnnual,
-        capitalGainsAnnual,
+      w2WagesAnnual,
+      interestIncomeAnnual,
+      dividendIncomeAnnual,
+      capitalGainsAnnual,
 
-        hsaContributionAnnual,
-        iraContributionAnnual,
-        solo401kEmployeeAnnual,
-        solo401kEmployerAnnual,
-        otherAdjustmentsAnnual,
+      hsaContributionAnnual,
+      iraContributionAnnual,
+      solo401kEmployeeAnnual,
+      solo401kEmployerAnnual,
+      otherAdjustmentsAnnual,
 
-        useItemized,
-        itemizedSaltPaidAnnual,
-        itemizedMortgageInterestAnnual,
-        itemizedCharityAnnual,
-        itemizedOtherAnnual,
+      useItemized,
+      itemizedSaltPaidAnnual,
+      itemizedMortgageInterestAnnual,
+      itemizedCharityAnnual,
+      itemizedOtherAnnual,
 
-        qualifyingChildren,
-        otherDependents,
-        caHasYoungChild,
+      qualifyingChildren,
+      otherDependents,
+      caHasYoungChild,
 
-        // Premium: NIIT/QBI
-        netInvestmentIncomeAdjustmentsAnnual,
-        qbiBusinessType,
-        qbiW2WagesAnnual,
-        qbiQualifiedPropertyUbiaAnnual,
-      } = parsed.data;
+      netInvestmentIncomeAdjustmentsAnnual,
+      qbiBusinessType,
+      qbiW2WagesAnnual,
+      qbiQualifiedPropertyUbiaAnnual,
 
-      const strategy: Strategy = parsed.data.strategy ?? "currentYear";
+      // ✅ NEW
+      paymentsMadeYtdAnnual,
+      usePerQuarterPayments,
+      paymentsMadeQ1,
+      paymentsMadeQ2,
+      paymentsMadeQ3,
+      paymentsMadeQ4,
+    } = parsed.data;
 
-      const userId = c.get("userId") as string;
-      const supabase = getSupabase(c.env);
+    const strategy: Strategy = parsed.data.strategy ?? "currentYear";
 
-      // Entitlements
-      const { data: entitlement, error: entitlementError } = await supabase
-        .from("entitlements")
-        .select("*")
-        .eq("clerk_user_id", userId)
-        .maybeSingle();
+    const userId = c.get("userId") as string;
+    const supabase = getSupabase(c.env);
 
-      if (entitlementError) {
-        console.error("Entitlement fetch error", entitlementError);
-        return c.json({ message: "Failed to load entitlement" }, 500);
-      }
+    // Entitlements
+    const { data: entitlement, error: entitlementError } = await supabase
+      .from("entitlements")
+      .select("*")
+      .eq("clerk_user_id", userId)
+      .maybeSingle();
 
-      const isPremium =
-        entitlement?.premium_until &&
-        new Date(entitlement.premium_until) > new Date();
+    if (entitlementError) {
+      console.error("Entitlement fetch error", entitlementError);
+      return c.json({ message: "Failed to load entitlement" }, 500);
+    }
 
-      // 🔒 Se mandou campos premium e não é premium -> 403
-      if (!isPremium && hasAnyPremiumFields(body)) {
-        return c.json({ message: "Premium required." }, 403);
-      }
+    const isPremium =
+      entitlement?.premium_until && new Date(entitlement.premium_until) > new Date();
 
-      // Free daily limit — 3 por dia
-      if (!isPremium) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+    // 🔒 Se mandou campos premium e não é premium -> 403
+    if (!isPremium && hasAnyPremiumFields(body)) {
+      return c.json({ message: "Premium required." }, 403);
+    }
+
+    // Free daily limit — 3 por dia
+    if (!isPremium) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
 
       const { count, error: countErr } = await supabase
         .from("quarterly_simulations")
@@ -673,326 +764,325 @@ estimatedQuarterlyRoute.post(
         .gte("created_at", today.toISOString())
         .lt("created_at", tomorrow.toISOString());
 
-        if (countErr) {
-          console.error("Count simulations error", countErr);
-          return c.json({ message: "Failed to check daily limit" }, 500);
-        }
-
-        if ((count ?? 0) >= 3) {
-          return c.json(
-            { message: "Daily limit reached. Upgrade to simulate more." },
-            429
-          );
-        }
+      if (countErr) {
+        console.error("Count simulations error", countErr);
+        return c.json({ message: "Failed to check daily limit" }, 500);
       }
 
-      // ============================
-      // 1) Income
-      // ============================
-      const investmentIncomeGross = clamp0(
-        interestIncomeAnnual + dividendIncomeAnnual + capitalGainsAnnual
-      );
-
-      // NIIT uses "net investment income" which we simplify as (gross investment income - investment adjustments).
-      // IMPORTANT: these adjustments should NOT reduce AGI in this MVP; they only reduce the NIIT base.
-      const netInvestmentIncomeForNiit = clamp0(
-        investmentIncomeGross - netInvestmentIncomeAdjustmentsAnnual
-      );
-
-      const earnedIncome = clamp0(netProfitAnnual + w2WagesAnnual);
-
-      const grossIncome = clamp0(
-        netProfitAnnual + w2WagesAnnual + otherIncomeAnnual + investmentIncomeGross
-      );
-
-      // ============================
-      // 2) SE tax + above-the-line
-      // ============================
-      const se = calcSelfEmploymentTax({
-        filingStatus,
-        netProfitAnnual,
-        w2WagesAnnual,
-      });
-
-      // Deduction is half of SS+Medicare portion (NOT including additional Medicare).
-      // Here we approximate using total SE (including addl) / 2 would slightly over-deduct.
-      // We'll follow common treatment: deductibleHalf is half of (SS + Medicare).
-      const deductibleHalf = round2((se.ssTax + se.medicareTax) * 0.5);
-
-
-      const aboveLineDeductions = round2(
-        deductibleHalf +
-          clamp0(hsaContributionAnnual) +
-          clamp0(iraContributionAnnual) +
-          clamp0(solo401kEmployeeAnnual) +
-          clamp0(solo401kEmployerAnnual) +
-          clamp0(otherAdjustmentsAnnual)
-      );
-
-      const agi = round2(clamp0(grossIncome - aboveLineDeductions));
-
-      // ============================
-      // 3) Deductions
-      // ============================
-      const standardDeduction = getStandardDeduction(filingStatus);
-
-      const itemizedDeduction = calcItemizedDeduction({
-        saltPaid: itemizedSaltPaidAnnual,
-        mortgageInterest: itemizedMortgageInterestAnnual,
-        charity: itemizedCharityAnnual,
-        otherItemized: itemizedOtherAnnual,
-      });
-
-      const deduction = isPremium
-        ? useItemized
-          ? Math.max(itemizedDeduction, standardDeduction)
-          : standardDeduction
-        : standardDeduction;
-
-      const taxableBeforeQbi = round2(clamp0(agi - deduction));
-
-      // ============================
-      // 4) QBI (premium)
-      // ============================
-      const qbiBase = isPremium
-        ? clamp0(
-            netProfitAnnual -
-              deductibleHalf -
-              solo401kEmployeeAnnual -
-              solo401kEmployerAnnual -
-              hsaContributionAnnual -
-              iraContributionAnnual
-          )
-        : 0;
-
-      const qbiDeduction = isPremium
-        ? calcQbiDeduction({
-            filingStatus,
-            qbiBase,
-            taxableBeforeQbi,
-            netCapitalGains: capitalGainsAnnual,
-            businessType: qbiBusinessType,
-            w2Wages: qbiW2WagesAnnual,
-            ubia: qbiQualifiedPropertyUbiaAnnual,
-          })
-        : 0;
-
-      const taxableIncomeFederal = round2(clamp0(taxableBeforeQbi - qbiDeduction));
-
-      // ============================
-      // 5) Federal tax
-      // ============================
-      const federalIncomeTaxBeforeCredits = calcTaxFromBrackets(
-        taxableIncomeFederal,
-        filingStatus
-      );
-
-      const niitTax = isPremium
-        ? calcNiit({
-            filingStatus,
-            magi: agi,
-            netInvestmentIncome: netInvestmentIncomeForNiit,
-          })
-        : 0;
-
-      const ctc = isPremium
-        ? calcChildCredits({
-            filingStatus,
-            magi: agi,
-            federalTaxBeforeCredits: federalIncomeTaxBeforeCredits,
-            qualifyingChildren,
-            otherDependents,
-          })
-        : {
-            ctcNonRefundableUsed: 0,
-            ctcRefundable: 0,
-            totalCreditsApplied: 0,
-            notes: [] as string[],
-          };
-
-      const eitc = isPremium
-        ? calcEitc({
-            filingStatus,
-            earnedIncome,
-            agi,
-            children: qualifyingChildren,
-            investmentIncome: investmentIncomeGross,
-          })
-        : { credit: 0, note: "" };
-
-      const federalAfterNonRefundable = round2(
-        clamp0(federalIncomeTaxBeforeCredits - ctc.ctcNonRefundableUsed)
-      );
-
-      const refundableCredits = round2(clamp0(eitc.credit) + clamp0(ctc.ctcRefundable));
-
-      const federalIncomeTaxAfterCredits = round2(
-        clamp0(federalAfterNonRefundable - refundableCredits)
-      );
-
-      const federalTotal = round2(clamp0(federalIncomeTaxAfterCredits + niitTax));
-
-      // ============================
-      // 6) State tax (+ CA credits premium)
-      // ============================
-      let stateIncomeTax = calcStateIncomeTax({ year: TAX_YEAR, state, filingStatus, federalAGI: agi, input: body, useItemized });
-
-      const caCredits = isPremium
-        ? calcCaCredits({
-            state,
-            earnedIncome,
-            qualifyingChildren,
-            hasYoungChild: caHasYoungChild,
-          })
-        : { caCredits: 0, notes: [] as string[] };
-
-      if (isPremium && state === "CA") {
-        stateIncomeTax = round2(clamp0(stateIncomeTax - caCredits.caCredits));
+      if ((count ?? 0) >= 3) {
+        return c.json({ message: "Daily limit reached. Upgrade to simulate more." }, 429);
       }
+    }
 
-      // ============================
-      // 7) Totals
-      // ============================
-      const seTax = se.total;
-      const totalTax = round2(seTax + federalTotal + stateIncomeTax);
-      const remainingAfterWithholding = round2(clamp0(totalTax - withholdingAnnual));
+    // ============================
+    // 1) Income
+    // ============================
+    const investmentIncomeGross = clamp0(
+      interestIncomeAnnual + dividendIncomeAnnual + capitalGainsAnnual
+    );
 
-      // ============================
-      // 8) Quarterly
-      // ============================
-      let quarterly = [
-        {
-          label: "Q1" as const,
-          dueDateLabel: "Apr 15",
-          amount: round2(remainingAfterWithholding / 4),
-        },
-        {
-          label: "Q2" as const,
-          dueDateLabel: "Jun 15",
-          amount: round2(remainingAfterWithholding / 4),
-        },
-        {
-          label: "Q3" as const,
-          dueDateLabel: "Sep 15",
-          amount: round2(remainingAfterWithholding / 4),
-        },
-        {
-          label: "Q4" as const,
-          dueDateLabel: "Jan 15",
-          amount: round2(remainingAfterWithholding / 4),
-        },
-      ];
+    const netInvestmentIncomeForNiit = clamp0(
+      investmentIncomeGross - netInvestmentIncomeAdjustmentsAnnual
+    );
 
-      // ============================
-      // 9) Safe Harbor
-      // ============================
-      let premiumPreview:
-        | { safeHarborMinAnnual: number; safeHarborMinQuarterly: number; message: string }
-        | undefined;
+    const earnedIncome = clamp0(netProfitAnnual + w2WagesAnnual);
 
-      if (priorYearTotalTax != null && priorYearTotalTax > 0) {
-        const multiplier = safeHarborMultiplier(filingStatus, priorYearAgi);
-        const safeHarborAnnual = round2(priorYearTotalTax * multiplier);
-        const safeHarborQuarter = round2(safeHarborAnnual / 4);
+    const grossIncome = clamp0(
+      netProfitAnnual + w2WagesAnnual + otherIncomeAnnual + investmentIncomeGross
+    );
 
-        premiumPreview = {
-          safeHarborMinAnnual: safeHarborAnnual,
-          safeHarborMinQuarterly: safeHarborQuarter,
-          message:
-            "Premium calculates penalty-safe quarterly payments using Safe Harbor rules and your prior-year info.",
+    // ============================
+    // 2) SE tax + above-the-line
+    // ============================
+    const se = calcSelfEmploymentTax({
+      filingStatus,
+      netProfitAnnual,
+      w2WagesAnnual,
+    });
+
+    const deductibleHalf = round2((se.ssTax + se.medicareTax) * 0.5);
+
+    const aboveLineDeductions = round2(
+      deductibleHalf +
+        clamp0(hsaContributionAnnual) +
+        clamp0(iraContributionAnnual) +
+        clamp0(solo401kEmployeeAnnual) +
+        clamp0(solo401kEmployerAnnual) +
+        clamp0(otherAdjustmentsAnnual)
+    );
+
+    const agi = round2(clamp0(grossIncome - aboveLineDeductions));
+
+    // ============================
+    // 3) Deductions
+    // ============================
+    const standardDeduction = getStandardDeduction(filingStatus);
+
+    const itemizedDeduction = calcItemizedDeduction({
+      saltPaid: itemizedSaltPaidAnnual,
+      mortgageInterest: itemizedMortgageInterestAnnual,
+      charity: itemizedCharityAnnual,
+      otherItemized: itemizedOtherAnnual,
+    });
+
+    const deduction = isPremium
+      ? useItemized
+        ? Math.max(itemizedDeduction, standardDeduction)
+        : standardDeduction
+      : standardDeduction;
+
+    const taxableBeforeQbi = round2(clamp0(agi - deduction));
+
+    // ============================
+    // 4) QBI (premium)
+    // ============================
+    const qbiBase = isPremium
+      ? clamp0(
+          netProfitAnnual -
+            deductibleHalf -
+            solo401kEmployeeAnnual -
+            solo401kEmployerAnnual -
+            hsaContributionAnnual -
+            iraContributionAnnual
+        )
+      : 0;
+
+    const qbiDeduction = isPremium
+      ? calcQbiDeduction({
+          filingStatus,
+          qbiBase,
+          taxableBeforeQbi,
+          netCapitalGains: capitalGainsAnnual,
+          businessType: qbiBusinessType,
+          w2Wages: qbiW2WagesAnnual,
+          ubia: qbiQualifiedPropertyUbiaAnnual,
+        })
+      : 0;
+
+    const taxableIncomeFederal = round2(clamp0(taxableBeforeQbi - qbiDeduction));
+
+    // ============================
+    // 5) Federal tax
+    // ============================
+    const federalIncomeTaxBeforeCredits = calcTaxFromBrackets(
+      taxableIncomeFederal,
+      filingStatus
+    );
+
+    const niitTax = isPremium
+      ? calcNiit({
+          filingStatus,
+          magi: agi,
+          netInvestmentIncome: netInvestmentIncomeForNiit,
+        })
+      : 0;
+
+    const ctc = isPremium
+      ? calcChildCredits({
+          filingStatus,
+          magi: agi,
+          federalTaxBeforeCredits: federalIncomeTaxBeforeCredits,
+          qualifyingChildren,
+          otherDependents,
+        })
+      : {
+          ctcNonRefundableUsed: 0,
+          ctcRefundable: 0,
+          totalCreditsApplied: 0,
+          notes: [] as string[],
         };
 
-        if (isPremium && strategy === "safeHarbor") {
-          const remainingSafeHarbor = round2(clamp0(safeHarborAnnual - withholdingAnnual));
-          const per = round2(remainingSafeHarbor / 4);
+    const eitc = isPremium
+      ? calcEitc({
+          filingStatus,
+          earnedIncome,
+          agi,
+          children: qualifyingChildren,
+          investmentIncome: investmentIncomeGross,
+        })
+      : { credit: 0, note: "" };
 
-          quarterly = [
-            { label: "Q1", dueDateLabel: "Apr 15", amount: per },
-            { label: "Q2", dueDateLabel: "Jun 15", amount: per },
-            { label: "Q3", dueDateLabel: "Sep 15", amount: per },
-            { label: "Q4", dueDateLabel: "Jan 15", amount: per },
-          ];
-        }
-      }
+    const federalAfterNonRefundable = round2(
+      clamp0(federalIncomeTaxBeforeCredits - ctc.ctcNonRefundableUsed)
+    );
 
-      // ============================
-      // 10) Pie
-      // ============================
-      const netTakeHome = round2(clamp0(grossIncome - totalTax));
+    const refundableCredits = round2(clamp0(eitc.credit) + clamp0(ctc.ctcRefundable));
 
-      const pieLabels = isPremium
-        ? ["Federal (after credits)", "NIIT", "State", "FICA/SE", "Net"]
-        : ["Federal", "State", "FICA/SE", "Net"];
+    const federalIncomeTaxAfterCredits = round2(
+      clamp0(federalAfterNonRefundable - refundableCredits)
+    );
 
-      const pieValues = isPremium
-        ? [federalIncomeTaxAfterCredits, niitTax, stateIncomeTax, seTax, netTakeHome]
-        : [federalTotal, stateIncomeTax, seTax, netTakeHome];
-      // ✅ INSERT AQUI (antes do return)
-      const { error: insertErr } = await supabase
-        .from("quarterly_simulations")
-        .insert({
-          clerk_user_id: userId,
-          tax_year: TAX_YEAR,
+    const federalTotal = round2(clamp0(federalIncomeTaxAfterCredits + niitTax));
+
+    // ============================
+    // 6) State tax (+ CA credits premium)
+    // ============================
+    let stateIncomeTax = calcStateIncomeTax({
+      year: TAX_YEAR,
+      state,
+      filingStatus,
+      federalAGI: agi,
+      input: body,
+      useItemized,
+    });
+
+    const caCredits = isPremium
+      ? calcCaCredits({
           state,
-          filing_status: filingStatus,
-          input: body,
-          result: {
-            tier: isPremium ? "premium" : "free",
-            annual: {
-              totalTax,
-              remainingAfterWithholding,
-              seTax,
-              federalTotal,
-              federalIncomeTaxAfterCredits,
-              niitTax,
-              stateIncomeTax,
-            },
-            quarterly,
-            pie: { labels: pieLabels, values: pieValues },
-          },
-        });
+          earnedIncome,
+          qualifyingChildren,
+          hasYoungChild: caHasYoungChild,
+        })
+      : { caCredits: 0, notes: [] as string[] };
 
-      if (insertErr) {
-        // não quebra a experiência do usuário por falha de logging
-        console.error("Insert quarterly_simulations error", insertErr);
-}
-      return c.json({
+    if (isPremium && state === "CA") {
+      stateIncomeTax = round2(clamp0(stateIncomeTax - caCredits.caCredits));
+    }
+
+    // ============================
+    // 7) Totals
+    // ============================
+    const seTax = se.total;
+    const totalTax = round2(seTax + federalTotal + stateIncomeTax);
+    const remainingAfterWithholding = round2(clamp0(totalTax - withholdingAnnual));
+
+    // ============================
+    // 8) Quarterly (tax-accurate default output)
+    // ============================
+    let quarterly = [
+      { label: "Q1" as const, dueDateLabel: "Apr 15", amount: round2(remainingAfterWithholding / 4) },
+      { label: "Q2" as const, dueDateLabel: "Jun 15", amount: round2(remainingAfterWithholding / 4) },
+      { label: "Q3" as const, dueDateLabel: "Sep 15", amount: round2(remainingAfterWithholding / 4) },
+      { label: "Q4" as const, dueDateLabel: "Jan 15", amount: round2(remainingAfterWithholding / 4) },
+    ];
+
+    // ============================
+    // 9) Safe Harbor
+    // ============================
+    let premiumPreview:
+      | { safeHarborMinAnnual: number; safeHarborMinQuarterly: number; message: string }
+      | undefined;
+
+    let safeHarborAnnual: number | null = null;
+
+    if (priorYearTotalTax != null && priorYearTotalTax > 0) {
+      const multiplier = safeHarborMultiplier(filingStatus, priorYearAgi);
+      safeHarborAnnual = round2(priorYearTotalTax * multiplier);
+      const safeHarborQuarter = round2(safeHarborAnnual / 4);
+
+      premiumPreview = {
+        safeHarborMinAnnual: safeHarborAnnual,
+        safeHarborMinQuarterly: safeHarborQuarter,
+        message:
+          "Premium calculates penalty-safe quarterly payments using Safe Harbor rules and your prior-year info.",
+      };
+
+      if (isPremium && strategy === "safeHarbor") {
+        const remainingSafeHarbor = round2(clamp0(safeHarborAnnual - withholdingAnnual));
+        const per = round2(remainingSafeHarbor / 4);
+
+        quarterly = [
+          { label: "Q1", dueDateLabel: "Apr 15", amount: per },
+          { label: "Q2", dueDateLabel: "Jun 15", amount: per },
+          { label: "Q3", dueDateLabel: "Sep 15", amount: per },
+          { label: "Q4", dueDateLabel: "Jan 15", amount: per },
+        ];
+      }
+    }
+
+    // ============================
+    // 9.5) Penalty risk (lite) — Premium only, requires prior year tax
+    // ============================
+    const penaltyRisk =
+      isPremium && safeHarborAnnual && safeHarborAnnual > 0
+        ? buildPenaltyRiskLite({
+            taxYear: TAX_YEAR,
+            safeHarborRequiredAnnual: safeHarborAnnual,
+            withholdingAnnual,
+            paymentsMadeYtdAnnual,
+            usePerQuarterPayments,
+            paymentsMadeQ1,
+            paymentsMadeQ2,
+            paymentsMadeQ3,
+            paymentsMadeQ4,
+          })
+        : undefined;
+
+    // ============================
+    // 10) Pie
+    // ============================
+    const netTakeHome = round2(clamp0(grossIncome - totalTax));
+
+    const pieLabels = isPremium
+      ? ["Federal (after credits)", "NIIT", "State", "FICA/SE", "Net"]
+      : ["Federal", "State", "FICA/SE", "Net"];
+
+    const pieValues = isPremium
+      ? [federalIncomeTaxAfterCredits, niitTax, stateIncomeTax, seTax, netTakeHome]
+      : [federalTotal, stateIncomeTax, seTax, netTakeHome];
+
+    // log simulation (non-blocking)
+    const { error: insertErr } = await supabase.from("quarterly_simulations").insert({
+      clerk_user_id: userId,
+      tax_year: TAX_YEAR,
+      state,
+      filing_status: filingStatus,
+      input: body,
+      result: {
         tier: isPremium ? "premium" : "free",
-        taxYear: TAX_YEAR,
         annual: {
-          totalTax: round2(totalTax),
-          remainingAfterWithholding: round2(remainingAfterWithholding),
-
-          // breakdown (helpful for UI/debug; safe to ignore)
-          seTax: round2(seTax),
-          federalIncomeTaxAfterCredits: round2(federalIncomeTaxAfterCredits),
-          niitTax: round2(niitTax),
-          qbiDeduction: round2(qbiDeduction),
-          taxableIncomeFederal: round2(taxableIncomeFederal),
-          stateIncomeTax: round2(stateIncomeTax),
+          totalTax,
+          remainingAfterWithholding,
+          seTax,
+          federalTotal,
+          federalIncomeTaxAfterCredits,
+          niitTax,
+          stateIncomeTax,
         },
         quarterly,
         pie: { labels: pieLabels, values: pieValues },
-        notes: [
-          isPremium
-            ? "Premium: includes federal brackets + constants from data/federal/2026.json, plus QBI + NIIT when applicable."
-            : "Free: uses standard deduction + federal brackets and basic SE tax.",
-          "SE tax is computed using federal_constants.json and accounts for the Social Security wage base and Additional Medicare threshold.",
-          ...(isPremium && qbiDeduction > 0
-            ? [`QBI deduction applied: $${qbiDeduction.toLocaleString("en-US")}.`]
-            : []),
-          ...(isPremium && niitTax > 0
-            ? [`NIIT (3.8%) applied: $${niitTax.toLocaleString("en-US")}.`]
-            : []),
-        ],
-        premiumPreview: !isPremium ? premiumPreview : undefined,
-      });
-    } catch (err: any) {
-      console.error("Estimated quarterly error", err);
-      return c.json(
-        { message: "Failed to calculate", error: err?.message || String(err) },
-        500
-      );
+        penaltyRisk,
+      },
+    });
+
+    if (insertErr) {
+      console.error("Insert quarterly_simulations error", insertErr);
     }
+
+    return c.json({
+      tier: isPremium ? "premium" : "free",
+      taxYear: TAX_YEAR,
+      annual: {
+        totalTax: round2(totalTax),
+        remainingAfterWithholding: round2(remainingAfterWithholding),
+        seTax: round2(seTax),
+        federalIncomeTaxAfterCredits: round2(federalIncomeTaxAfterCredits),
+        niitTax: round2(niitTax),
+        qbiDeduction: round2(qbiDeduction),
+        taxableIncomeFederal: round2(taxableIncomeFederal),
+        stateIncomeTax: round2(stateIncomeTax),
+      },
+      quarterly,
+      pie: { labels: pieLabels, values: pieValues },
+      penaltyRisk,
+      notes: [
+        isPremium
+          ? "Premium: includes federal brackets + constants from data/federal/2026.json, plus QBI + NIIT when applicable."
+          : "Free: uses standard deduction + federal brackets and basic SE tax.",
+        "SE tax is computed using federal_constants.json and accounts for the Social Security wage base and Additional Medicare threshold.",
+        ...(isPremium && qbiDeduction > 0
+          ? [`QBI deduction applied: $${qbiDeduction.toLocaleString("en-US")}.`]
+          : []),
+        ...(isPremium && niitTax > 0 ? [`NIIT (3.8%) applied: $${niitTax.toLocaleString("en-US")}.`] : []),
+        ...(penaltyRisk ? ["Penalty risk is simplified and for education only."] : []),
+      ],
+      premiumPreview: !isPremium ? premiumPreview : undefined,
+    });
+  } catch (err: any) {
+    console.error("Estimated quarterly error", err);
+    return c.json(
+      { message: "Failed to calculate", error: err?.message || String(err) },
+      500
+    );
   }
-);
+});
