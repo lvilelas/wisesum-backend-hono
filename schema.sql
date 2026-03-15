@@ -123,3 +123,25 @@ create index if not exists quarterly_simulations_user_created_at_idx
 
 create index if not exists quarterly_simulations_created_at_idx
   on public.quarterly_simulations (created_at desc);
+
+
+
+CREATE TABLE IF NOT EXISTS public.w4_calculations (
+  id BIGSERIAL PRIMARY KEY,
+  clerk_user_id TEXT NOT NULL,
+  annual_salary NUMERIC NOT NULL,
+  side_income NUMERIC NOT NULL DEFAULT 0,
+  children INTEGER NOT NULL DEFAULT 0,
+  dependents INTEGER NOT NULL DEFAULT 0,
+  pay_frequency TEXT NOT NULL,
+  withholding_per_paycheck NUMERIC NOT NULL,
+  filing_status TEXT NOT NULL,
+  estimated_tax NUMERIC NOT NULL,
+  annual_withholding NUMERIC NOT NULL,
+  difference NUMERIC NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+-- Index to speed up daily limit queries on clerk_user_id and date.
+CREATE INDEX IF NOT EXISTS idx_w4_calculations_user_date
+  ON public.w4_calculations (clerk_user_id, created_at);
